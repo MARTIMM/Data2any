@@ -1,0 +1,64 @@
+# Yaml file describing several parts of the project
+#
+---
+Abstract: Set of modules to maintain an application state
+License: Perl
+Copyright: 2013 - 2014
+
+Author:
+ name: Marcel Timmerman
+ email: mt1957@gmail.com
+ cpan: MARTIMM
+ github: MARTIMM
+
+Notes:
+ - http://www.perlfoundation.org/cpan_licensing_guidelines
+
+#-------------------------------------------------------------------------------
+# Bugs to repair, use version of AppState.
+# Format of version: Release . ChangeCount . BugfixCount
+# BugfixCount is reset on Release upgrade.
+#
+Bugs:
+ - issue: 1
+   found in project version:
+   date:
+   priority:
+   description: 
+
+   fixed in project version: 
+   fixDate: 
+   fixDescr: 
+   fixmodules:
+
+#-------------------------------------------------------------------------------
+# What needs to be added changed and removed (+ on front means DONE! :-b )
+#
+Todo:
+
+#-------------------------------------------------------------------------------
+# What is changed, use version of AppState. See Bugs for format.
+#
+Changes:
+ - date: 
+   version: 
+   module: 
+   description: 
+
+#-------------------------------------------------------------------------------
+# Scrutinize tests
+#
+Tests:
+ - Module: Data2any
+   Constructor: new
+   TestPrograms:
+    - t/900-Data2any.t
+
+#-------------------------------------------------------------------------------
+# Installation: Generated
+# Dependencies: Generated
+# Copyright: Generated
+# License: Generated
+#
+Readme:
+  Body:

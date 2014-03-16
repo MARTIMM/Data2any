@@ -1,0 +1,94 @@
+Revision history for Perl extension Data2xml.
+
+Versions are in x.y.z where x is the major release version. This will reset
+both y and z. Y is the feature add or change part and Z is the bugfix part
+--------------------------------------------------------------------------------
+
+0.15.4	2013 11 09
+	- Added counters to be used as dollar variables. Set, increment
+	  and decrement.
+
+0.14.4	2013 11 04
+	- After repairing the entity definitions with the doctype declaration
+	  I saw that XML::Quote translated the user inserted entity codes
+	  translated in readable text. That is, converting the & in front of
+	  the code into &amp;
+
+0.14.3	2013 11 04
+	- Restored entities processing with doctype declaration. By exident
+	  dropped in last update.
+	- Dropped the 'writeDoctype' option from Data2xml and yaml2xml. Because
+	  of 0.14.2 it is not needed anymore.
+
+0.14.2	2013 11 03
+	- Removed XMLPROLOG, 
+	- Added STARTDOCUMENT and ENDDOCUMENT
+	- Found XML::Quote on CPAN and removed htmlCharCodes,
+	  setHtmlCharCodesRX, getHtmlChar, hasHtmlChar, getMatchChars,
+	  addHtmlChar, setHtmlCharCodesRX, convertHtmlChar
+
+0.13.2	2013 11 02
+	- Plugin directories renamed so as to show that the plugin is used for
+	  a specific xml variant. For the moment these are Html, Html5, Svc and
+	  Docbook. Directory Xml is made for plugins which are not depending on
+	  some xml language e.g. to include pieces of data from elsewhere.
+	- Added PREPROCESS and POSTPROCESS commands to prepare files for use
+	  and to cleanup afterwards.
+
+0.12.2	2013 11 01
+	- Removed extra newline characters at the end of users text.
+
+0.12.1	2013 10 31
+	- Modified SENDTO specification. Possibilities as scalar, array and hash
+	- Also added sendToSelect to select one of the SENDTO selections in case
+	  SENDTO is a hash or array. Default is set to STDOUT or the first entry.
+
+0.11.1	2013 10 29
+	- Added control attribute to DOCTYPE to control output to XMLPROLOG
+	  Attribute name is writeDoctype.
+
+0.10.1	2013 10 28
+	- bugfix; The root element could not be fully specified when this was
+	  more complex.
+
+0.10.0	2013 10 28
+	- Moved XML and DOCTYPE into XMLPROLOG
+	- Added PI to XMLPROLOG
+
+0.9.0	2013 10 22
+	- Added HTTPHEADER.
+
+0.8.0	2013 10 21
+	- Added DOCTYPE to xml result
+	- Added SENDTO
+
+0.7.0	2013 10 20
+	- Dollar variables can be set, modified and deleted from user modules
+
+0.6.0	2013 10 18
+	- Added COMMENT and XMLPROLOG
+
+0.5.0	2013 10 17
+	- Added  PI (processing instructions) and CDATA
+
+0.4.0	2013 10 16
+	- Implemented SETVARIABLES.
+
+0.3.0	2013 10 09
+	- Implemented shortcut tags and are better than in older version. Any
+	  tag can be used. Therefore the keywords SETHTMLSHORTCUTTAGS,
+	  SHORTCUTTAGS and ADDSHORTCUTTAGS are no longer needed.
+	- Implemented PARSESHORTCUTS and SUBSTITUTEDOLLARVARS switches in 
+	  documents.
+
+0.2.0	2013 10 07
+	- Data2xml, Substitute variables like $abc and ${abc}
+	- Variables set by program: $file, $date, $time
+
+0.1.0	2013 10 06
+	- Data2xml/LinkFile.pm
+
+0.0.1	2013 06 17
+	- original version; created by h2xs 1.23 with options
+		-AX --use-new-tests -n Data2xml
+

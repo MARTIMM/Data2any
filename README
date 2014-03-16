@@ -1,0 +1,41 @@
+Data2any version 0.1.0
+======================
+
+Software is still in alpha state!
+
+
+INTRODUCTION
+
+Second attempt to write a Yaml2xml module. Because the program is build
+upon the AppState set of modules it can now make use of more than one type of
+storage instead of Yaml only. Also the program makes use of translators
+which can output the the results in whatever form. At the moment there is a Xml
+translator. The name of the module has therefore been changed into Data2any.
+
+This package gives also a script which uses the module to transform yaml to any
+output format called yaml2any.
+
+INSTALLATION
+
+To install this module type the following:
+
+  perl Build.PL
+  Build
+  Build test
+  Build install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+  AppState and submodules
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2013 Marcel Timmerman, mt1957@gmail.com
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.16.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+

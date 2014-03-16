@@ -1,0 +1,327 @@
+#!/usr/bin/perl
+#
+use Modern::Perl;
+use namespace::autoclean;
+use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
+
+use Moose;
+extends qw(AppState::Ext::Constants);
+
+use version; our $VERSION = version->parse('v0.0.4');
+use 5.016003;
+
+#-------------------------------------------------------------------------------
+# Temporary solution to use lib locally before install
+# and to let apache look into my libraries.
+#
+use lib qw( lib ../../lib
+            /home/marcel/Software/lib/perl5
+            /home/marcel/Software/lib64/perl5
+          );
+
+# Temporary solution to let apache look into my libraries.
+#
+#use lib qw( /home/marcel/Software/lib/perl5 /home/marcel/Software/lib64/perl5);
+require Data2any;
+
+#-------------------------------------------------------------------------------
+#
+has description =>
+    ( is		=> 'ro'
+    , isa		=> 'Str'
+    , default		=> <<EODSCR
+yaml2xml is used to convert a YAML data structure into XML using Data2any
+perl module.
+EODSCR
+    , init_arg		=> undef
+    , lazy		=> 1
+    );
+
+has usage =>
+    ( is		=> 'ro'
+    , isa		=> 'ArrayRef'
+    , default		=> 
+      sub
+      { return
+	[
+        ];
+      }
+    , init_arg		=> undef
+    , lazy		=> 1
+    );
+
+has arguments =>
+    ( is		=> 'ro'
+    , isa		=> 'ArrayRef'
+    , default		=> 
+      sub
+      { return
+	[ [ 'filename'	=> 'Filename of yaml data description']
+	]
+      }
+    , init_arg		=> undef
+    , lazy		=> 1
+    );
+
+has options =>
+    ( is		=> 'ro'
+    , isa		=> 'ArrayRef'
+    , default		=> 
+      sub
+      { return
+	[ [ 'docnbr|d:i'	=> <<EOENTRY
+Document number in file to process. Default number 0
+EOENTRY
+        ]
+        , [ 'help|h:s'	        => 'Help on this program']
+        , [ 'logging|l:i'	=> 'Turn logging on, default is 0(off)']
+        , [ 'sendToSelect|s:s'	=> <<EOENTRY
+Select SENDTO entry. Default is STDOUT which is a special SENDTO value and will
+send the result to the standard output channel of the program, mostly the
+screen. Another special value is NOOUT which means that there will be no output
+whatsoever. When SENDTO is a HASH of keys, the key can be given to select the
+value decribing the method of output. When SENDTO is an ARRAY the selection can
+only be numbers. If in that case a text is given or a number out of the range of
+entries in the SENDTO specification, the first entry (=0) will be selected. The default
+(=STDOUT) will then be 0. When SENDTO is not an ARRAY or HASH, the option is
+ignored and the value will be taken as SENDTO specification.
+EOENTRY
+          ]
+        , [ 'version|v'	=> 'Show version']
+        ]
+      }
+    , init_arg		=> undef
+    , lazy		=> 1
+    );
+
+has examples =>
+    ( is		=> 'ro'
+    , isa		=> 'ArrayRef'
+    , default		=> 
+      sub
+      { return
+	[ [ "$0 --critic=gentle" => <<EOTXT
+EOTXT
+          ]
+	];
+      }
+    , init_arg		=> undef
+    , lazy		=> 1
+    );
+
+#-------------------------------------------------------------------------------
+#
+sub BUILD
+{
+  my($self) = @_;
+
+  if( $self->meta->is_mutable )
+  {
+    # Error codes
+    #
+    $self->code_reset;
+    $self->const( 'C_PROJECTREADERR',   qw(M_ERROR M_FAIL));
+    $self->const( 'C_TESTFILENTFND',    qw(M_WARNING));
+
+    __PACKAGE__->meta->make_immutable;
+  }
+
+  #-----------------------------------------------------------------------------
+  # Setup application
+  #
+  my $app = AppState->instance;
+  $app->initialize;
+  $app->check_directories;
+
+  #-----------------------------------------------------------------------------
+  # Setup logging
+  #
+  my $log = $app->get_app_object('Log');
+
+  #$log->show_on_error(0);
+  $log->do_append_log(0);
+
+  $log->start_logging;
+
+  #$log->do_flush_log(1);
+#  $log->log_mask($self->M_ERROR|$self->M_WARNING);
+$log->log_mask($self->M_ERROR|$self->M_WARNING|$self->M_INFO);
+
+  $log->add_tag('MXT');
+}
+
+#-------------------------------------------------------------------------------
+# Create Main object
+#
+my $self = main->new;
+
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#
+use AppState;
+my $app = AppState->instance;
+my $log = $app->get_app_object('Log');
+
+#-------------------------------------------------------------------------------
+# Setup command description and check help option.
+#
+my $cmd = $app->get_app_object('CommandLine');
+$cmd->config_getopt_long(qw(bundling));
+
+# Defaults
+#
+#$cmd->setOption( blib => 0, lib => 0, verbose => 1);
+
+# Initialize
+#
+$cmd->initialize( $self->description, $self->arguments, $self->options
+#		, $self->usage, $self->examples
+		);
+#say (join ', ', map {"$_=" . $cmd->getOption($_)} sort $cmd->get_options);
+
+# Noverbose or quiet will make proving less noisy
+#
+#$cmd->setOption(verbose => 0) if $cmd->getOption('quiet');
+
+if( $log->get_last_error == $cmd->C_CMD_OPTPROCFAIL or $cmd->getOption('help'))
+{
+  say $cmd->usage;
+  $self->leave;
+}
+
+#-------------------------------------------------------------------------------
+# Show version of program and Data2any module and exit
+#
+if( $cmd->getOption('version') )
+{
+  say "Version of yaml2any.pl: $VERSION";
+  say "Version of Data2any.pm: ", Data2any->VERSION;
+  exit(0);
+}
+
+#-------------------------------------------------------------------------------
+# The real works
+#
+my $filename = shift @ARGV;
+if( !defined $filename )
+{
+  say STDERR "No filename given;";
+  
+  say $cmd->usage;
+  exit(1);
+}
+
+# Initialize module
+#
+my $data2any = Data2any->new( inputFile => $filename, dataFileType => 'Yaml');
+# ==!!==
+#$data2any->translator('Xml');
+# ==!!==
+
+# And modify some object values
+#
+my $docnbr = $cmd->getOption('docnbr');
+$data2any->requestDocument($docnbr) if defined $docnbr;
+
+my $logging = $cmd->getOption('logging');
+$data2any->logging($logging) if defined $logging;
+
+my $sendToSelect = $cmd->getOption('sendToSelect');
+$data2any->sendToSelect($sendToSelect) if defined $sendToSelect;
+
+
+# Transform steps to get results
+#
+$data2any->nodetreeFromData;
+$data2any->setDollarVar( version_yaml2xml => $VERSION);
+$data2any->transformNodetree;
+$data2any->postprocess;
+
+#-------------------------------------------------------------------------------
+
+$self->leave;
+
+
+#-------------------------------------------------------------------------------
+# Cleanup and leave
+#
+sub leave
+{
+  my $app = AppState->instance;
+  $app->cleanup;
+  exit(0);
+}
+
+#-------------------------------------------------------------------------------
+
+__END__
+
+#-------------------------------------------------------------------------------
+# Documentation
+#
+
+=head1 NAME
+
+yaml2any - Perl program to convert a YAML data file into any other using
+translator plugins.
+
+
+=head1 SYNOPSIS
+
+yaml2xml [<options>] <filename>
+
+
+=head1 DESCRIPTION
+
+Generate XML code from YAML text.
+
+Arguments
+  filename        Filename of yaml data description
+
+Options
+  --docnbr --dn integer optional
+                  Document number in file to process. Default number 0
+
+  --help -h       Help on this program.
+
+  --logging -l integer optional
+                  Turn logging on, default is 0(off)
+
+  --sendToSelect -s string optional
+                  Select SENDTO entry. Default is STDOUT which is a
+                  special SENDTO value and will send the result to the
+                  standard output channel of the program, mostly the
+                  screen. Another special value is NOOUT which means that
+                  there will be no output whatsoever. When SENDTO is a
+                  HASH of keys, the key can be given to select the value
+                  decribing the method of output. When SENDTO is an ARRAY
+                  the selection can only be numbers. If in that case a
+                  text is given or a number out of the range of documents
+                  in the file, the first document (=0) will be selected.
+                  The default (=STDOUT) will then be 0. When SENDTO not
+                  an ARRAY or HASH, the option is ignored and the value
+                  will be taken as SENDTO specification. 
+
+  --version -v    Show version
+
+
+=head1 AUTHOR
+
+M. Timmerman, E<lt>mt1957@gmail.com<gt>
+
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2013 by M. Timmerman
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.16.3 or,
+at your option, any later version of Perl 5 you may have available.
+
+=head1 SEE ALSO
+
+L<Data2any>
+
+=cut
+
