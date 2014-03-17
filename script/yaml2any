@@ -171,20 +171,20 @@ $cmd->config_getopt_long(qw(bundling));
 
 # Defaults
 #
-#$cmd->setOption( blib => 0, lib => 0, verbose => 1);
+#$cmd->set_option( blib => 0, lib => 0, verbose => 1);
 
 # Initialize
 #
 $cmd->initialize( $self->description, $self->arguments, $self->options
 #		, $self->usage, $self->examples
 		);
-#say (join ', ', map {"$_=" . $cmd->getOption($_)} sort $cmd->get_options);
+#say (join ', ', map {"$_=" . $cmd->get_option($_)} sort $cmd->get_options);
 
 # Noverbose or quiet will make proving less noisy
 #
-#$cmd->setOption(verbose => 0) if $cmd->getOption('quiet');
+#$cmd->set_option(verbose => 0) if $cmd->get_option('quiet');
 
-if( $log->get_last_error == $cmd->C_CMD_OPTPROCFAIL or $cmd->getOption('help'))
+if( $log->get_last_error == $cmd->C_CMD_OPTPROCFAIL or $cmd->get_option('help'))
 {
   say $cmd->usage;
   $self->leave;
@@ -193,7 +193,7 @@ if( $log->get_last_error == $cmd->C_CMD_OPTPROCFAIL or $cmd->getOption('help'))
 #-------------------------------------------------------------------------------
 # Show version of program and Data2any module and exit
 #
-if( $cmd->getOption('version') )
+if( $cmd->get_option('version') )
 {
   say "Version of yaml2any.pl: $VERSION";
   say "Version of Data2any.pm: ", Data2any->VERSION;
@@ -221,13 +221,13 @@ my $data2any = Data2any->new( inputFile => $filename, dataFileType => 'Yaml');
 
 # And modify some object values
 #
-my $docnbr = $cmd->getOption('docnbr');
+my $docnbr = $cmd->get_option('docnbr');
 $data2any->requestDocument($docnbr) if defined $docnbr;
 
-my $logging = $cmd->getOption('logging');
+my $logging = $cmd->get_option('logging');
 $data2any->logging($logging) if defined $logging;
 
-my $sendToSelect = $cmd->getOption('sendToSelect');
+my $sendToSelect = $cmd->get_option('sendToSelect');
 $data2any->sendToSelect($sendToSelect) if defined $sendToSelect;
 
 
