@@ -30,8 +30,8 @@ has description =>
     ( is		=> 'ro'
     , isa		=> 'Str'
     , default		=> <<EODSCR
-yaml2xml is used to convert a YAML data structure into XML using Data2any
-perl module.
+yaml2any is used to convert a YAML data structure into any structure using
+Data2any perl module and a translator plugin.
 EODSCR
     , init_arg		=> undef
     , lazy		=> 1
@@ -72,7 +72,7 @@ has options =>
 	[ [ 'docnbr|d:i'	=> <<EOENTRY
 Document number in file to process. Default number 0
 EOENTRY
-        ]
+          ]
         , [ 'help|h:s'	        => 'Help on this program']
         , [ 'logging|l:i'	=> 'Turn logging on, default is 0(off)']
         , [ 'sendToSelect|s:s'	=> <<EOENTRY
@@ -147,7 +147,7 @@ sub BUILD
 #  $log->log_mask($self->M_ERROR|$self->M_WARNING);
 $log->log_mask($self->M_ERROR|$self->M_WARNING|$self->M_INFO);
 
-  $log->add_tag('MXT');
+  $log->add_tag('Y2A');
 }
 
 #-------------------------------------------------------------------------------
@@ -178,7 +178,6 @@ $cmd->config_getopt_long(qw(bundling));
 $cmd->initialize( $self->description, $self->arguments, $self->options
 #		, $self->usage, $self->examples
 		);
-#say (join ', ', map {"$_=" . $cmd->get_option($_)} sort $cmd->get_options);
 
 # Noverbose or quiet will make proving less noisy
 #
@@ -235,23 +234,13 @@ $data2any->sendToSelect($sendToSelect) if defined $sendToSelect;
 #
 $data2any->nodetreeFromData;
 $data2any->setDollarVar( version_yaml2xml => $VERSION);
-$data2any->transformNodetree;
+$data2any->transform_nodetree;
 $data2any->postprocess;
 
 #-------------------------------------------------------------------------------
 
 $self->leave;
 
-
-#-------------------------------------------------------------------------------
-# Cleanup and leave
-#
-sub leave
-{
-  my $app = AppState->instance;
-  $app->cleanup;
-  exit(0);
-}
 
 #-------------------------------------------------------------------------------
 

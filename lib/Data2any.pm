@@ -13,7 +13,6 @@ use Moose::Util::TypeConstraints;
 extends qw(Data2any::Tools);
 
 use AppState;
-use AppState::Plugins::Feature::PluginManager;
 
 require Cwd;
 require File::Basename;
@@ -25,7 +24,7 @@ use DateTime;
 #-------------------------------------------------------------------------------
 # Translator
 #
-has translators =>
+has _translators =>
     ( is                => 'ro'
     , isa               => 'AppState::Plugins::Feature::PluginManager'
     , init_arg          => undef
@@ -34,7 +33,7 @@ has translators =>
       {
         my($self) = @_;
 
-        my $pm = AppState::Plugins::Feature::PluginManager->new;
+        my $pm = AppState->instance->get_app_object('PluginManager');
         my $path = Cwd::realpath($INC{"Data2any.pm"});
         $path =~ s@/Data2any.pm@@;
 
@@ -56,7 +55,7 @@ has translators =>
                           );
         $pm->drop_plugin('Tools');
         $pm->drop_plugin('TranslatorTools');
-#$pm->listPluginNames;
+#$pm->list_plugin_names;
 
         $self->_translatorTypes(join '|', $pm->get_plugin_names);
         return $pm;
@@ -103,7 +102,7 @@ has translator =>
         $o //= '';
         if( $n ne $o )
         {
-          $self->_log( "Translator set to $n", $self->C_TRANSLATORSET);
+          $self->wlog( "Translator set to $n", $self->C_TRANSLATORSET);
         }
       }
     );
@@ -121,18 +120,18 @@ has nodeTree =>
     , writer            => 'setNodeTree'
     );
 
-has treeTraverseData =>
-    ( is                => 'rw'
-    , isa               => 'HashRef'
-    , default           => sub { return {}; }
-    , init_arg          => undef
-    , traits            => ['Hash']
-    , handles           =>
-      { setTTD          => 'set'
-      , getTTD          => 'get'
-      , clearTTD        => 'clear'
-      }
-    );
+#has treeTraverseData =>
+#    ( is                => 'rw'
+#    , isa               => 'HashRef'
+#    , default           => sub { return {}; }
+#    , init_arg          => undef
+#    , traits            => ['Hash']
+#    , handles           =>
+#      { setTTD          => 'set'
+#      , getTTD          => 'get'
+#      , clearTTD        => 'clear'
+#      }
+#    );
 
 has properties =>
     ( is                => 'rw'
@@ -212,6 +211,14 @@ sub BUILD
     $self->const( 'C_NODEFAULTCFGOBJ',  qw(M_ERROR M_FAIL));
 #    $self->const( 'C_',qw(M_ERROR M_FAIL));
 
+    my $nt = AppState->instance->get_app_object('NodeTree');
+    $self->meta->add_attribute( 'traverse_type'
+                              , default         => $nt->C_NT_DEPTHFIRST2
+                              , init_arg        => undef
+                              , is              => 'rw'
+                              , isa             => 'Int'
+                              );
+
     __PACKAGE__->meta->make_immutable;
   }
 }
@@ -247,14 +254,14 @@ sub _initialize
   $cfg->modify_config_object( 'defaultConfigObject'
                             , {requestFile => 'data2any'}
                             );
-  $self->_log( "Error modifying default config", $self->C_FAILMODCONF)
+  $self->wlog( "Error modifying default config", $self->C_FAILMODCONF)
     unless $log->is_last_success;
   $cfg->load;
-  $cfg->addDocuments({}) unless $cfg->nbr_documents;
+  $cfg->add_documents({}) unless $cfg->nbr_documents;
   $cfg->save unless -e $cfg->configFile;
 
 #say "D2a i: $self";
-  $self->_log( "Configuration file loaded", $self->C_CONFLOADED);
+  $self->wlog( "Configuration file loaded", $self->C_CONFLOADED);
 
   #-----------------------------------------------------------------------------
   # Add and select data2xml config and select also requested document.
@@ -271,7 +278,7 @@ sub _initialize
 
   else
   {
-    $self->_log( 'One of the options inputData with dataLabel or'
+    $self->wlog( 'One of the options inputData with dataLabel or'
                . ' inputFile is missing'
                , $self->C_NOINPUTFILE
                );
@@ -279,7 +286,7 @@ sub _initialize
 
   # Check if the root is an array reference.
   #
-  $self->_log( 'Root is not an array reference', $self->C_ROOTNOARRAY)
+  $self->wlog( 'Root is not an array reference', $self->C_ROOTNOARRAY)
      unless ref $cfg->get_document eq 'ARRAY';
 
   # Make an entry in the configfile recently loaded files.
@@ -300,19 +307,13 @@ sub _initialize
                        );
     $cfg->save;
 
-    $self->_log( "User data loaded", $self->C_DATALOADED);
+    $self->wlog( "User data loaded", $self->C_DATALOADED);
   }
 
   else
   {
-    $self->_log( "User data loaded", $self->C_NODEFAULTCFGOBJ);
+    $self->wlog( "User data loaded", $self->C_NODEFAULTCFGOBJ);
   }
-
-  #-----------------------------------------------------------------------------
-  # Initialize translator
-  #
-  my $trobj = $self->translators->get_object( { name => $self->translator});
-  $trobj->init($self);
 }
 
 ################################################################################
@@ -323,7 +324,6 @@ sub _preprocess
 {
   my($self) = @_;
 
-  my $trobj = $self->translators->get_object( { name => $self->translator});
   $self->selectInputFile($self->requestDocument);
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   my $root = $cfg->get_document;
@@ -368,9 +368,63 @@ sub _preprocess
   $self->translator($tr) if defined $tr and $tr;
 
   #-----------------------------------------------------------------------------
+  # Initialize translator
+  #
+  my $trobj = $self->_translators->get_object( { name => $self->translator});
+  $trobj->init($self);
+
+  #-----------------------------------------------------------------------------
   # Let the translator preprocess some stuff
   #
   $trobj->preprocess( $self, $root);
+
+  # Get variables from the DocumentControl section
+  #
+  if( defined $self->getProperty('SetVariables') )
+  {
+    my $dvs = $self->getProperty('SetVariables');
+    $self->setDollarVar(%$dvs) if ref $dvs eq 'HASH';
+  }
+}
+
+################################################################################
+#
+sub node_handler
+{
+  my( $self, $code) = @_;
+
+  my $nt = AppState->instance->get_app_object('NodeTree');
+  $nt->node_handler($code);
+}
+
+################################################################################
+#
+sub node_handler_up
+{
+  my( $self, $code) = @_;
+
+  my $nt = AppState->instance->get_app_object('NodeTree');
+  $nt->node_handler_up($code);
+}
+
+################################################################################
+#
+sub node_handler_down
+{
+  my( $self, $code) = @_;
+
+  my $nt = AppState->instance->get_app_object('NodeTree');
+  $nt->node_handler_down($code);
+}
+
+################################################################################
+#
+sub node_handler_end
+{
+  my( $self, $code) = @_;
+
+  my $nt = AppState->instance->get_app_object('NodeTree');
+  $nt->node_handler_end($code);
 }
 
 ################################################################################
@@ -379,7 +433,7 @@ sub _processTree
 {
   my( $self) = @_;
 
-#  my $trobj = $self->translators->get_object( { name => $self->translator});
+#  my $trobj = $self->_translators->get_object( { name => $self->translator});
   my $topRawEntries = $self->topRawEntries;
 
   # Get NodeTree object and the treebuild data hash. This is the hash which
@@ -391,19 +445,19 @@ sub _processTree
 
   # Set information in this treebuild data for the plugins
   #
-  $tbd->{inputFile} = $self->inputFile;
-  $tbd->{dataFileType} = $self->dataFileType;
-  $tbd->{inputData} = $self->inputData;
-  $tbd->{dataLabel} = $self->dataLabel;
-  $tbd->{requestDocument} = $self->requestDocument;
+  $tbd->{inputFile}             = $self->inputFile;
+  $tbd->{dataFileType}          = $self->dataFileType;
+  $tbd->{inputData}             = $self->inputData;
+  $tbd->{dataLabel}             = $self->dataLabel;
+  $tbd->{requestDocument}       = $self->requestDocument;
 
   # Define also some dollar variables to be used as $inputFile and so on
   #
-  $self->setDollarVar( inputFile => $self->inputFile
-                     , dataFileType => $self->dataFileType
-                     , inputData => $self->inputData
-                     , dataLabel => $self->dataLabel
-                     , requestDocument => $self->requestDocument
+  $self->setDollarVar( inputFile        => $self->inputFile
+                     , dataFileType     => $self->dataFileType
+                     , inputData        => $self->inputData
+                     , dataLabel        => $self->dataLabel
+                     , requestDocument  => $self->requestDocument
                      );
 
   # Build the tree from the raw data at the document root into a nodetree
@@ -416,7 +470,7 @@ sub _processTree
 
 ################################################################################
 #
-sub transformNodetree
+sub transform_nodetree
 {
   my( $self) = @_;
 
@@ -430,13 +484,9 @@ sub transformNodetree
   my $level = 0;
   my $xmlResult = '';
 
-  my $trobj = $self->translators->get_object( { name => $self->translator});
-  $nt->node_handler_up(sub{ $trobj->goingUpHandler( $self, @_); });
-  $nt->node_handler_down(sub{ $trobj->goingDownHandler( $self, @_); });
-  $nt->node_handler_end(sub{ $trobj->atTheEndHandler( $self, @_); });
-
-  $self->clearTTD;
-  $nt->traverse( $self->nodeTree, $nt->C_NT_DEPTHFIRST2);
+#  $self->clearTTD;
+  my $traverseType = $self->traverse_type;
+  $nt->traverse( $self->nodeTree, $traverseType);
 }
 
 ################################################################################
@@ -445,14 +495,14 @@ sub postprocess
 {
   my( $self) = @_;
 
-  my $trobj = $self->translators->get_object( { name => $self->translator});
-  $trobj->postprocess($self);
+  my $trobj = $self->_translators->get_object( { name => $self->translator});
+  my $resultText = $trobj->postprocess($self) // '';
 
   #-----------------------------------------------------------------------------
   # Send result away except when NOOUT is requested. When NOOUT is used for
   # SendToSelect, the caller might want to use the result in some other way.
   #
-  if( $self->sendToSelect ne 'NOOUT' )
+  if( $self->sendToSelect ne 'NOOUT' and $resultText )
   {
     # Get the input filename or data label to get the path to the file.
     # Get the basename from it.
@@ -525,10 +575,20 @@ sub postprocess
 
     my $outputHandler;
     open $outputHandler, $sendTo;
-    say $outputHandler $trobj->resultText;
+    say $outputHandler $resultText;
 
     close $outputHandler;
   }
+}
+
+################################################################################
+#
+sub process_nodetree
+{
+  my( $self) = @_;
+
+  my $trobj = $self->_translators->get_object( { name => $self->translator});
+  $trobj->process_nodetree($self);
 }
 
 #-------------------------------------------------------------------------------

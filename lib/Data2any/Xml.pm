@@ -4,11 +4,12 @@
 #
 package Data2any::Xml;
 
-use version; our $VERSION = '' . version->parse("v0.1.0");
-use 5.016003;
-#-------------------------------------------------------------------------------
-
 use Modern::Perl;
+use version; our $VERSION = '' . version->parse('v0.1.0');
+use 5.016003;
+
+use namespace::autoclean;
+
 use Moose;
 
 extends 'Data2any::TranslatorTools';
@@ -127,13 +128,19 @@ sub preprocess
 {
   my( $self, $data2any, $root) = @_;
 
-  # Get variables from the DocumentControl section
+  # Prepare the traversal process
   #
-  if( defined $data2any->getProperty('SetVariables') )
-  {
-    my $dvs = $data2any->getProperty('SetVariables');
-    $data2any->setDollarVar(%$dvs) if ref $dvs eq 'HASH';
-  }
+  my $nt = AppState->instance->get_app_object('NodeTree');
+  $data2any->traverse_type($nt->C_NT_DEPTHFIRST2);
+
+  # Each handler will be called with the following arguments
+  # - this translator object($self)
+  # - data2any object
+  # - node object of which there are several types
+  #
+  $data2any->node_handler_up(sub{ $self->goingUpHandler( $data2any, @_); });
+  $data2any->node_handler_down(sub{ $self->goingDownHandler( $data2any, @_); });
+  $data2any->node_handler_end(sub{ $self->atTheEndHandler( $data2any, @_); });
 }
 
 #-------------------------------------------------------------------------------
@@ -585,6 +592,8 @@ sub postprocess
   # Add the xmlresult to the lines above and store it again.
   #
   $self->addBeforeXml($xmlHeader);
+  
+  return $self->resultText;
 }
 
 #-------------------------------------------------------------------------------

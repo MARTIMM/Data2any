@@ -142,7 +142,7 @@ sub convertList
 
   if( ref $list ne 'ARRAY' )
   {
-    $self->_log( [ "List is not an ARRAY type. Level:", $self->level]
+    $self->wlog( [ "List is not an ARRAY type. Level:", $self->level]
                , $m->M_ERROR
                );
   }

@@ -293,7 +293,7 @@ sub loadData
   {
     $cfg->select_config_object($label);
     $self->checkAndSelectDocNbr($docNbr);
-    $self->_log( "$docType to xml config '$label doc $docNbr selected"
+    $self->wlog( "$docType to xml config '$label doc $docNbr selected"
                , $self->C_DOCSELECTED
                );
   }
@@ -309,14 +309,14 @@ sub loadData
     {
 #       $cfg->load;
       $self->checkAndSelectDocNbr($docNbr);
-      $self->_log( "Adding new data2xml config '$label', doc $docNbr selected"
+      $self->wlog( "Adding new data2xml config '$label', doc $docNbr selected"
                  , $self->C_DOCSELECTED
                  );
     }
 
     else
     {
-      $self->_log( "Failed to add data2any config '$label'"
+      $self->wlog( "Failed to add data2any config '$label'"
                  , $self->C_CONFADDFAIL
                  );
     }
@@ -362,7 +362,7 @@ sub loadInputFile
     {
       $cfg->select_config_object($label);
       $self->checkAndSelectDocNbr($docNbr);
-      $self->_log( "$docType to xml config '$label' doc $docNbr selected"
+      $self->wlog( "$docType to xml config '$label' doc $docNbr selected"
                  , $self->C_DOCSELECTED
                  );
     }
@@ -379,14 +379,14 @@ sub loadInputFile
       {
         $cfg->load;
         $self->checkAndSelectDocNbr($docNbr);
-        $self->_log( "Adding new data2xml config '$label', doc $docNbr selected"
+        $self->wlog( "Adding new data2xml config '$label', doc $docNbr selected"
                    , $self->C_CONFADDDED
                    );
       }
 
       else
       {
-        $self->_log( "Failed to add data2xml config '$label'"
+        $self->wlog( "Failed to add data2xml config '$label'"
                    , $self->C_CONFADDFAIL
                    );
       }
@@ -395,7 +395,7 @@ sub loadInputFile
 
   else
   {
-    $self->_log( "filename not defined", $self->C_FILENOTDEFINED);
+    $self->wlog( "filename not defined", $self->C_FILENOTDEFINED);
   }
 }
 
@@ -417,14 +417,14 @@ sub selectInputFile
   {
     $cfg->select_config_object($label);
     $self->checkAndSelectDocNbr($docNbr);
-    $self->_log( "data to config '$label', doc $docNbr selected"
+    $self->wlog( "data to config '$label', doc $docNbr selected"
                , $self->C_INPUTFILESELECTED
                );
   }
 
   else
   {
-    $self->_log( "Failed to select data to xml config '$label'"
+    $self->wlog( "Failed to select data to xml config '$label'"
                , $self->C_SELECTFAIL
                );
   }
@@ -443,7 +443,7 @@ sub checkAndSelectDocNbr
   $cfg->select_document($docNbr);
   if( $cfg->get_current_document != $docNbr )
   {
-    $self->_log( "Requested document not in range, set to"
+    $self->wlog( "Requested document not in range, set to"
                . $cfg->get_current_document
                , $self->C_DOCNBRNOTFOUND
                );
@@ -451,7 +451,7 @@ sub checkAndSelectDocNbr
 
   else
   {
-    $self->_log( "doc $docNbr selected", $self->C_DOCSELECTED);
+    $self->wlog( "doc $docNbr selected", $self->C_DOCSELECTED);
   }
 }
 
