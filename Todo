@@ -1,0 +1,138 @@
+- Create test files
+
+- Add help info
+  Write manpages for module, program and plugins
+  Write book
+
+- Check if it is possible to read from other than yaml configs. It is
+  possible but check out use of objects which is !perl/module
+
+- Use of special control tags which are not translated to xml. These are all
+  uppercase names. Most of these are named outside the xml document but a few
+  can be used while describing the document. Those names cannot be used to
+  generate a xml element. Something like INSERT.
+     - INSERT name=ADDSHORTCUTTAGS attr1=aval1 ...: values
+  => <ADDSHORTCUTTAGS attr1=aval1 ...>values</ADDSHORTCUTTAGS>
+
+- Defining templates
+  (1)
+  Define;
+  - DEFINE:
+     name: google
+     attributes: classVal1 classVal2
+     value: v0
+      - p class=classVal1:
+         - bla bla
+	 - a href=http://google.com:
+            - strong class=classVal2: v0
+
+  Use;
+  - google a1=green: Point to google
+  
+  Produces;
+  - p class=green:
+     - bla bla
+     - a href=http://google.com:
+	- strong: Point to google
+  
+  (2)
+  - DEFINE:
+     name: mkTableRow
+     value: tableData
+      - tr:
+         - FOREACH v=tableData:
+	    - td: v
+
+  Use;
+  - table:
+     - mkTableRow: [a, b, c, d]
+  
+  Produces:
+  - table:
+     - tr:
+        - td: a
+	- td: b
+	- td: c
+	- td: d
+
+
+
+
+  Following keywords are obsolete since older version
+  ---------------------------------------------------
+    ADDSHORTCUTTAGS
+    CHARSET: <character set name>
+    CONVERTTO:
+     - resultType: <result file type>
+     - commands:
+   	- <commands to get to the result>
+      Names which can be used in the commands are __BASENAME__ and __OUT__
+    INCLUDE
+    PRETTYPRINT
+    SETHTMLSHORTCUTTAGS
+    SHORTCUTTAGS
+    USELIBPATH
+    XINCLUDES
+
+  Following keywords are implemented
+  ----------------------------------
+    CDATA: text
+    COMMENT: text
+    DOCTYPE: (- test for location of keyword)
+     root: <root element of xml document>
+     type: <system or public>
+     id: <dtd if and version of document>
+     dtd: <url to dtd document>
+    ENDDOCUMENT
+    HTTPHEADER
+     content: <content description>
+    PARSESHORTCUTS
+    PI:
+     target: targetProcess
+     data: 
+      attr1: val1
+      ...
+    SENDTO: Several forms, scalar, array or hash with sendtoSelect
+     piped output lines. Recognized are __BASENAME__.
+    SETVARIABLES:
+     var1: val1
+     ...
+    STARTDOCUMENT
+    SUBSTITUTEDOLLARVARS: 0/1
+    XML (- test for location of keyword)
+
+  Following keywords are planned
+  ------------------------------
+    DEPENDENCY:
+     - <result file>: [ <path to source file>, <command to generate result file>]
+    DEFAULTKEYWORDS:
+     element name: key/value pairs
+    PREPROCESS:
+    POSTPROCESS:
+    XSLTRANSFORM:
+
+
+  Programs
+  --------
+    yaml2xml				Has manual. Yaml to xml conversion
+  
+  Modules
+  -------
+    Data2xml				Data to xml conversion
+    Data2xml::Tools			Module used for plugin
+
+  Installed helper plugin modules
+  -------------------------------
+    Data2xml::Html::LinkFile		Has manual
+    Data2xml::Html::List::Ol
+    Data2xml::Xml::LinkFile		Has manual
+
+  Planned helper plugin modules
+  -----------------------------
+    Data2xml::Html::Gravatar
+    Data2xml::Html::Substitute
+    Data2xml::Html::Format::Pre
+    Data2xml::Html::Table::Complex
+    Data2xml::Html::Table::Log
+    Data2xml::Html::Table::ServerInfo
+    Data2xml::Html::Table::Simple
