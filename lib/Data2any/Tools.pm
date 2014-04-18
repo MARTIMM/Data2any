@@ -23,125 +23,114 @@ has version =>
     , default           => $VERSION
     );
 
-#has tools =>
-#    ( is                => 'ro'
-#    , isa               => 'Str'
-#    , default           => 
-#    );
-
 # Filename and its type with data which must be translated to xml.
 #
-has inputFile =>
+has input_file =>
     ( is                => 'ro'
     , isa               => 'Str'
-    , predicate         => 'hasInputFile'
-    , writer            => 'setInputFile'
+    , predicate         => 'has_input_file'
+    , writer            => 'set_input_file'
     );
 
-has dataFileType =>
+has data_file_type =>
     ( is                => 'ro'
     , isa               => 'Str'
     , default           => 'Yaml'
-    , writer            => 'setDataFileType'
+    , writer            => 'set_data_file_type'
     );
 
 # Data in memory to be translated to xml. This is to have another way
 # to give the data
 #
-has inputData =>
+has input_data =>
     ( is                => 'ro'
     , isa               => 'Any'
-    , predicate         => 'hasInputData'
-    , writer            => 'setInputData'
+    , predicate         => 'has_input_data'
+    , writer            => 'set_input_data'
     );
 
-# Label to store the data from inputFile or inputData with.
+# Label to store the data from input_file or input_data with.
 #
-has dataLabel =>
+has data_label =>
     ( is                => 'ro'
     , isa               => 'Str'
-    , predicate         => 'hasDataLabel'
-    , writer            => 'setDataLabel'
+    , predicate         => 'has_data_label'
+    , writer            => 'set_data_label'
     , default           => 'internal'
     );
 
-has dropPreviousConfig =>
+has drop_previous_config =>
     ( is                => 'ro'
     , isa               => 'Bool'
     , default           => 0
     );
 
-has requestDocument =>
+has request_document =>
     ( is                => 'rw'
     , isa               => 'Int'
     , default           => 0
     );
 
-# Object data is set by the NodeTree module. The data names that are set are
-# type          Type of the object data. This is a way to see which part is
-#               used to create the module.
-#               Types can be;
-#                 Type                  Example
-#                 --------------------  ----------------------------------------
-#                 C_NT_NODEMODULE       - !perl/modulename
-#                 C_NT_VALUEDMODULE     - node attr=text: !perl/modulename
-#                 C_NT_ATTRIBUTEMODULE  - node attr=text:
-#                                           extAttr: !perl/modulename
+# Object data is set by the NodeTree module. The data names that are set are;
 #
+# attribute_name
+#              Name of the attribute to which this object is assigned
 #
-# type          C_NT_NODEMODULE
-# moduleName    Class name of this module. It is used to require the module
-#               and after that to call new(objectData=>{...})
-# parentNode    Node of the parent
-# nodeData      This is a blessed structure created by the YAML module upon
-#               encountering '!perl/modulename'. It holds the structure to
-#               calculate the result with process(). There will be a call to
-#               process() for the actual process of extending the nodetree.
-# tree_build_data Hash for user convenience. It can communicate information from
-#               one node object to the other because it is given to every
-#               node object.
+# module_name  Class name of this module. It is used to require the module
+#              and after that to call new(object_data=>{...})
 #
+# node         Node name
 #
-# type          C_NT_VALUEDMODULE
-# moduleName    Class name of this module. It is used to require the module
-#               and after that to call new(objectData=>{...})
-# parentNode    Node of the parent
-# nodeData      This is a blessed structure created by the YAML module upon
-#               encountering '!perl/modulename'. It holds the structure to
-#               calculate the result with process(). There will be a call to
-#               process() to get the value of the current node.
-# tree_build_data Hash for user convenience. It can communicate information from
-#               one node object to the other because it is given to every
-#               node object.
+# node_data    This is a blessed structure created by the YAML module upon
+#              encountering '!perl/modulename'. It holds the structure to
+#              calculate the result with process(). There will be a call to
+#              process() for the actual process of extending the nodetree.
 #
+# parent_node  Node of the parent
 #
-# type          C_NT_ATTRIBUTEMODULE
-# node          Node name
-# attributeName Name of the attribute to which this object is assigned
-# moduleName    Class name of this module. It is used to require the module
-#               and after that to call new(objectData=>{...})
-# parentNode    Node of the parent
-# nodeData      This is a blessed structure created by the YAML module upon
-#               encountering '!perl/modulename'. It holds the structure
-#               to calculate the result with process().
-# tree_build_data Hash for user convenience. It can communicate information from
-#               one node object to the other because it is given to every
-#               node object.
+# tree_build_data
+#              Hash for user convenience. It can communicate information from
+#              one node object to the other because it is given to every
+#              node object.
 #
-has objectData =>
+# type         Type of the object data. This is a way to see which part is
+#              used to create the module.
+#              Types can be;
+#                Type                  Example
+#                --------------------  ----------------------------------------
+#                C_NT_NODEMODULE       - !perl/modulename
+#                C_NT_VALUEDMODULE     - node attr=text: !perl/modulename
+#                C_NT_ATTRIBUTEMODULE  - node attr=text:
+#                                          extAttr: !perl/modulename
+#
+# Not all attributes are used always. It depends on the type attribute which is
+# set by the NodeTree module when a certain situation has been found in the raw
+# data.
+#
+# When type is C_NT_NODEMODULE
+# The used attributes: module_name, parent_node, node_data, tree_build_data
+#
+# When type is C_NT_VALUEDMODULE
+# The used attributes: module_name, parent_node, node_data, tree_build_data
+#
+# When type is C_NT_ATTRIBUTEMODULE
+# The used attributes: node, attribute_name, module_name, parent_node,
+#                      node_data, tree_build_data
+#
+has object_data =>
     ( is                => 'rw'
     , isa               => 'HashRef'
     , traits            => ['Hash']
     , default           => sub { return {}; }
     , handles           =>
-      { addDataItem     => 'set'
-      , getDataItem     => 'get'
-      , delDataItem     => 'delete'
-      , getDataItemKeys => 'keys'
-      , itemExists      => 'exists'
-      , itemDefined     => 'defined'
-      , clearData       => 'clear'
-      , nbrDataItems    => 'count'
+      { add_data_item           => 'set'
+      , get_data_item           => 'get'
+      , del_data_item           => 'delete'
+      , get_data_item_keys      => 'keys'
+      , item_exists             => 'exists'
+      , item_defined            => 'defined'
+      , clear_data              => 'clear'
+      , nbr_data_items          => 'count'
       }
     );
 
@@ -182,29 +171,16 @@ sub process
 {
   my( $self) = @_;
   $self->wlog( 'Subroutine process() not defined in package '
-            . $self->getDataItem('moduleName')
-            , $self->C_NOPROCESS
-            );
+             . $self->get_data_item('module_name')
+             , $self->C_NOPROCESS
+             );
 }
 
 #-------------------------------------------------------------------------------
-# Default method to intercept call unless defined in module
 #
-#sub help
-#{
-#  my( $self) = @_;
-#  $self->wlog( [ "Subroutine help() not defined in package"
-#              , $self->getDataItem('moduleName')
-#              ]
-#            , $m->M_WARNING
-#            );
-#}
-
-#-------------------------------------------------------------------------------
-#
-sub mkNode
+sub mk_node
 {
-  my( $self, $nodename, $parentNode, $value, $attributes) = @_;
+  my( $self, $nodename, $parent_node, $value, $attributes) = @_;
 
   my $node;
 
@@ -212,12 +188,12 @@ sub mkNode
   {
     $node = AppState::NodeTree::Node->new( name => $nodename);
     $node->attributes($attributes) if ref($attributes) eq 'HASH';
-    $parentNode->link_with_node($node);
+    $parent_node->link_with_node($node);
 
-#    if( ref($parentNode) eq 'AppState::NodeTree::Node' )
+#    if( ref($parent_node) eq 'AppState::NodeTree::Node' )
 #    {
-#      $node->parent($parentNode);
-#      $parentNode->pushChild($node);
+#      $node->parent($parent_node);
+#      $parent_node->pushChild($node);
 #    }
   }
 
@@ -231,7 +207,7 @@ sub mkNode
 
 ################################################################################
 #
-sub extendNodeTree
+sub extend_node_tree
 {
   my( $self, $rawData) = @_;
 
@@ -241,21 +217,21 @@ sub extendNodeTree
 
   # Build the tree from the raw data at the document root into a nodetree
   #
-  my $parentNode = $self->getDataItem('parentNode');
+  my $parent_node = $self->get_data_item('parent_node');
 
-  $nt->convert_to_node_tree( $rawData, $parentNode);
+  $nt->convert_to_node_tree( $rawData, $parent_node);
 }
 
 ################################################################################
 # Load user representation of xml from memory. First add a configuration
 # specification of the users input file. Then select and set the configuration.
 #
-sub loadData
+sub load_data
 {
   my($self) = @_;
 
-  my $label = 'D2X-' . $self->dataLabel;
-  $self->setDataLabel($label);
+  my $label = 'D2X-' . $self->data_label;
+  $self->set_data_label($label);
 
   my $app = AppState->instance;
   my $cfg = $app->get_app_object('ConfigManager');
@@ -264,20 +240,20 @@ sub loadData
   # Check if the user wants the previous data destroyed
   #
   $cfg->drop_config_object($label)
-    if defined $self->dropPreviousConfig
-    and $self->dropPreviousConfig
+    if defined $self->drop_previous_config
+    and $self->drop_previous_config
     and $cfg->hasConfigObject($label)
     ;
 
 
-  my $docNbr = $self->requestDocument;
+  my $docNbr = $self->request_document;
   my $docType = 'data';
   $docNbr //= 0;
 
   if( $cfg->hasConfigObject($label) )
   {
     $cfg->select_config_object($label);
-    $self->checkAndSelectDocNbr($docNbr);
+    $self->check_and_select_doc_nbr($docNbr);
     $self->wlog( "$docType '$label doc $docNbr selected", $self->C_DOCSELECTED);
   }
 
@@ -290,7 +266,7 @@ sub loadData
                            );
     if( $log->is_last_success )
     {
-      $self->checkAndSelectDocNbr($docNbr);
+      $self->check_and_select_doc_nbr($docNbr);
       $self->wlog( "Adding new data2any config '$label', doc $docNbr selected"
                  , $self->C_DOCSELECTED
                  );
@@ -305,7 +281,7 @@ sub loadData
 
     # Set the given data in the configuration
     #
-    $cfg->setDocuments($self->inputData);
+    $cfg->setDocuments($self->input_data);
   }
 }
 
@@ -315,18 +291,18 @@ sub loadData
 # The data is saved and the next time this data is used ignoring the filename
 # and config type.
 #
-sub loadInputFile
+sub load_input_file
 {
   my($self) = @_;
 
-  my $filename = $self->inputFile;
+  my $filename = $self->input_file;
   if( defined $filename and $filename )
   {
-    my $docNbr = $self->requestDocument;
-    my $docType = $self->dataFileType;
+    my $docNbr = $self->request_document;
+    my $docType = $self->data_file_type;
 
     my $label = 'D2X-' . $filename;
-    $self->setDataLabel($label);
+    $self->set_data_label($label);
 #say STDERR "Label: $label";
 
     my $app = AppState->instance;
@@ -343,7 +319,7 @@ sub loadInputFile
     if( $cfg->hasConfigObject($label) )
     {
       $cfg->select_config_object($label);
-      $self->checkAndSelectDocNbr($docNbr);
+      $self->check_and_select_doc_nbr($docNbr);
       $self->wlog( "$docType to xml config '$label' doc $docNbr selected"
                  , $self->C_DOCSELECTED
                  );
@@ -360,7 +336,7 @@ sub loadInputFile
       if( $log->is_last_success )
       {
         $cfg->load;
-        $self->checkAndSelectDocNbr($docNbr);
+        $self->check_and_select_doc_nbr($docNbr);
         $self->wlog( "Adding new data2xml config '$label', doc $docNbr selected"
                    , $self->C_CONFADDDED
                    );
@@ -386,11 +362,11 @@ sub loadInputFile
 # configuration specification of the users input file. Then select
 # and load the configuration.
 #
-sub selectInputFile
+sub select_input_file
 {
   my( $self, $docNbr) = @_;
 
-  my $label = $self->dataLabel;
+  my $label = $self->data_label;
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   $docNbr //= 0;
 
@@ -398,7 +374,7 @@ sub selectInputFile
   if( $cfg->hasConfigObject($label) )
   {
     $cfg->select_config_object($label);
-    $self->checkAndSelectDocNbr($docNbr);
+    $self->check_and_select_doc_nbr($docNbr);
     $self->wlog( "data to config '$label', doc $docNbr selected"
                , $self->C_INPUTFILESELECTED
                );
@@ -416,7 +392,7 @@ sub selectInputFile
 
 ################################################################################
 #
-sub checkAndSelectDocNbr
+sub check_and_select_doc_nbr
 {
   my( $self, $docNbr) = @_;
 
@@ -439,12 +415,12 @@ sub checkAndSelectDocNbr
 
 ################################################################################
 #
-sub getDefaultAttributes
+sub get_default_attributes
 {
   my($self) = @_;
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  my $yd = $self->getDataItem('nodeData');
+  my $yd = $self->get_data_item('node_data');
   my $attr = {};
 
   $attr->{id} = $yd->{id} if $yd->{id};
@@ -456,11 +432,11 @@ sub getDefaultAttributes
 
 ################################################################################
 #
-sub setDefaultAttributes
+sub set_default_attributes
 {
   my( $self, $node, $idPrefix) = @_;
 
-  my $yd = $self->getDataItem('nodeData');
+  my $yd = $self->get_data_item('node_data');
   my $attr = {};
   $idPrefix //= '';
 
@@ -471,7 +447,7 @@ sub setDefaultAttributes
 
 ################################################################################
 #
-sub getDollarVar
+sub get_dollar_var
 {
   my( $self, $key) = @_;
 
@@ -482,22 +458,20 @@ sub getDollarVar
 
 ################################################################################
 #
-sub setDollarVar
+sub set_dollar_var
 {
   my( $self, %kvPairs) = @_;
 
   my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#say STDERR "Tbd: $tbd";
   foreach my $key (keys %kvPairs)
   {
-#say STDERR "Set KV: $key, $kvPairs{$key}";
     $tbd->{dollarVariables}{$key} = $kvPairs{$key};
   }
 }
 
 ################################################################################
 #
-sub getDVarNames
+sub get_dvar_names
 {
   my( $self) = @_;
   my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
@@ -506,7 +480,7 @@ sub getDVarNames
 
 ################################################################################
 #
-sub clearDVars
+sub clear_dvars
 {
   my( $self) = @_;
   my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;

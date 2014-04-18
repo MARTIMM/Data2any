@@ -1,64 +1,137 @@
-# Yaml file describing several parts of the project
-#
 ---
-Abstract: Set of modules to maintain an application state
-License: Perl
-Copyright: 2013 - 2014
-
-Author:
- name: Marcel Timmerman
- email: mt1957@gmail.com
- cpan: MARTIMM
- github: MARTIMM
-
-Notes:
- - http://www.perlfoundation.org/cpan_licensing_guidelines
-
-#-------------------------------------------------------------------------------
-# Bugs to repair, use version of AppState.
-# Format of version: Release . ChangeCount . BugfixCount
-# BugfixCount is reset on Release upgrade.
-#
-Bugs:
- - issue: 1
-   found in project version:
-   date:
-   priority:
-   description: 
-
-   fixed in project version: 
-   fixDate: 
-   fixDescr: 
-   fixmodules:
-
-#-------------------------------------------------------------------------------
-# What needs to be added changed and removed (+ on front means DONE! :-b )
-#
-Todo:
-
-#-------------------------------------------------------------------------------
-# What is changed, use version of AppState. See Bugs for format.
-#
+Application:
+  abstract: Set of modules to maintain an application state
+  author:
+    email: mt1957@gmail.com
+    name: Marcel Timmerman
+  copyright: 2013 - 2014
+  dependencies: {}
+  documentation:
+    - README
+  install-test: {}
+  licenses:
+    - Perl_5
+  name: Data2any
+  notes: 
+   - http://www.perlfoundation.org/cpan_licensing_guidelines
+   - data2any tool use:
+      - input_file
+      - has_input_file
+      - set_input_file
+      - data_file_type
+      - input_data
+      - has_input_data
+      - data_label
+      - has_data_label
+      - request_document
+      - load_data
+      - load_input_file
+      - select_input_file
+      - set_dollar_var
+      - clear_dvars
+  perl-version: !!perl/hash:version
+    original: v5.16.3
+    qv: 1
+    version:
+      - 5
+      - 16
+      - 3
+  use_appstate: 1
+  use_moose: 1
+  version: !!perl/hash:version
+    original: 0.0.1
+    qv: 1
+    version:
+      - 0
+      - 0
+      - 1
+Bugs: {}
 Changes:
- - date: 
-   version: 
-   module: 
-   description: 
-
-#-------------------------------------------------------------------------------
-# Scrutinize tests
-#
-Tests:
- - Module: Data2any
-   Constructor: new
-   TestPrograms:
-    - t/900-Data2any.t
-
-#-------------------------------------------------------------------------------
-# Installation: Generated
-# Dependencies: Generated
-# Copyright: Generated
-# License: Generated
-#
+  - date: 2014-04-09
+    descriptions:
+      - Original version; created by buildBuilder version v0.0.1
+      - Use AppState modules in program and module
+    module: Data2any::Gui
+    program: program.pl
+    version: 0.0.1
+Cpan:
+  Account: MARTIMM
+Git:
+  github:
+    account: MARTIMM
+    git-ignore-list:
+      - .*
+      - '~*'
+      - '*.bak'
+      - MYMETA*
+      - MANIFEST.SKIP
+      - blib
+      - _build
+      - Build
+      - Build.bat
+      - Build.COM
+      - BUILD.COM
+      - build.com
+      - Distribution-Tests/*
+      - Old/*
+      - Tests/*
+      - '*.tgz'
+      - '*.tb2'
+      - '*.tar'
+      - '*.tar.gz'
+      - '*.tar.b2'
+      - pm_to_blib
+    repository: 
+Manifest-skip-list:
+  - \./\..*
+  - '\bData2any-Gui-[\d\.\_]+'
+  - '^MYMETA\.'
+  - \bBuild$
+  - \bBuild.bat$
+  - '~$'
+  - \.bak$
+  - '^MANIFEST\.SKIP'
+  - \bblib
+  - \b_build
+  - \bBuild.COM$
+  - \bBUILD.COM$
+  - \bbuild.com$
+  - \bDistribution-Tests/\.*
+  - \bProject.yml$
+  - \bOld/.*
+  - \bTests/.*
+  - .*\.tgz$
+  - .*\.tb2$
+  - .*\.tar$
+  - .*\.tar\.gz$
+  - .*\.tar\.b2$
+  - \bpm_to_blib$
 Readme:
-  Body:
+  description: |2
+        The README is used to introduce the module and provide instructions on how
+        to install the module, any machine dependencies it may have (for example C
+        compilers and installed libraries) and any other information that should be
+        provided before the module is installed.
+
+        A README file is required for CPAN modules since CPAN extracts the README
+        file from a module distribution so that people browsing the archive can use
+        it get an idea of the modules uses. It is usually a good idea to provide
+        version information here so that people can decide whether fixes for the
+        module are worth downloading.
+  example: |2
+        use Data2any::Gui;
+        my $obj = Data2any::Gui->new();
+Tests:
+  - module: Data2any
+    constructor: new
+    test-programs:
+      - t/900-Data2any.t
+Todo:
+  2014-04-17: |
+    remove objectData from Tools and TranslatorTools. When nodetree exists use
+    the global store in the node. Can even be one independend node.
+
+    With this change, tree_build_data of Nodetree can also be removed. dollar
+    variables are stored there so must also go to global data in the node
+    
+

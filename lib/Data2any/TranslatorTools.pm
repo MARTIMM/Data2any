@@ -28,47 +28,47 @@ has version =>
 
 # Filename and its type with data which must be translated to xml.
 #
-has inputFile =>
+has input_file =>
     ( is                => 'ro'
     , isa               => 'Str'
-    , predicate         => 'hasInputFile'
-    , writer            => 'setInputFile'
+    , predicate         => 'has_input_file'
+    , writer            => 'set_input_file'
     );
 
-has dataFileType =>
+has data_file_type =>
     ( is                => 'ro'
     , isa               => 'Str'
     , default           => 'Yaml'
-    , writer            => 'setDataFileType'
+    , writer            => 'set_data_file_type'
     );
 
 # Data in memory to be translated to xml. This is to have another way
 # to give the data
 #
-has inputData =>
+has input_data =>
     ( is                => 'ro'
     , isa               => 'Any'
-    , predicate         => 'hasInputData'
-    , writer            => 'setInputData'
+    , predicate         => 'has_input_data'
+    , writer            => 'set_input_data'
     );
 
-# Label to store the data from inputFile or inputData with.
+# Label to store the data from input_file or input_data with.
 #
-has dataLabel =>
+has data_label =>
     ( is                => 'ro'
     , isa               => 'Str'
-    , predicate         => 'hasDataLabel'
-    , writer            => 'setDataLabel'
+    , predicate         => 'has_data_label'
+    , writer            => 'set_data_label'
     , default           => 'internal'
     );
 
-has dropPreviousConfig =>
+has drop_previous_config =>
     ( is                => 'ro'
     , isa               => 'Bool'
     , default           => 0
     );
 
-has requestDocument =>
+has request_document =>
     ( is                => 'rw'
     , isa               => 'Int'
     , default           => 0
@@ -247,7 +247,7 @@ sub BUILD
 
 ################################################################################
 #
-sub extendNodeTree
+sub extend_node_tree
 {
   my( $self, $rawData) = @_;
 
@@ -257,20 +257,20 @@ sub extendNodeTree
 
   # Build the tree from the raw data at the document root into a nodetree
   #
-  my $parentNode = $self->getDataItem('parentNode');
-  $nt->convert_to_node_tree( $rawData, $parentNode);
+  my $parent_node = $self->get_data_item('parent_node');
+  $nt->convert_to_node_tree( $rawData, $parent_node);
 }
 
 ################################################################################
 # Load user representation of xml from memory. First add a configuration
 # specification of the users input file. Then select and set the configuration.
 #
-sub loadData
+sub load_data
 {
   my($self) = @_;
 
-  my $label = 'D2X-' . $self->dataLabel;
-  $self->setDataLabel($label);
+  my $label = 'D2X-' . $self->data_label;
+  $self->set_data_label($label);
 
   my $app = AppState->instance;
   my $cfg = $app->get_app_object('ConfigManager');
@@ -279,20 +279,20 @@ sub loadData
   # Check if the user wants the previous data destroyed
   #
   $cfg->drop_config_object($label)
-    if defined $self->dropPreviousConfig
-    and $self->dropPreviousConfig
+    if defined $self->drop_previous_config
+    and $self->drop_previous_config
     and $cfg->hasConfigObject($label)
     ;
 
 
-  my $docNbr = $self->requestDocument;
+  my $docNbr = $self->request_document;
   my $docType = 'data';
   $docNbr //= 0;
 
   if( $cfg->hasConfigObject($label) )
   {
     $cfg->select_config_object($label);
-    $self->checkAndSelectDocNbr($docNbr);
+    $self->check_and_select_doc_nbr($docNbr);
     $self->wlog( "$docType to xml config '$label doc $docNbr selected"
                , $self->C_DOCSELECTED
                );
@@ -308,7 +308,7 @@ sub loadData
     if( $log->is_last_succes )
     {
 #       $cfg->load;
-      $self->checkAndSelectDocNbr($docNbr);
+      $self->check_and_select_doc_nbr($docNbr);
       $self->wlog( "Adding new data2xml config '$label', doc $docNbr selected"
                  , $self->C_DOCSELECTED
                  );
@@ -323,7 +323,7 @@ sub loadData
 
     # Set the given data in the configuration
     #
-    $cfg->setDocuments($self->inputData);
+    $cfg->setDocuments($self->input_data);
   }
 }
 
@@ -333,18 +333,18 @@ sub loadData
 # The data is saved and the next time this data is used ignoring the filename
 # and config type.
 #
-sub loadInputFile
+sub load_input_file
 {
   my($self) = @_;
 
-  my $filename = $self->inputFile;
+  my $filename = $self->input_file;
   if( defined $filename and $filename )
   {
-    my $docNbr = $self->requestDocument;
-    my $docType = $self->dataFileType;
+    my $docNbr = $self->request_document;
+    my $docType = $self->data_file_type;
 
     my $label = 'D2X-' . $filename;
-    $self->setDataLabel($label);
+    $self->set_data_label($label);
 #say STDERR "Label: $label";
 
     my $app = AppState->instance;
@@ -361,7 +361,7 @@ sub loadInputFile
     if( $cfg->hasConfigObject($label) )
     {
       $cfg->select_config_object($label);
-      $self->checkAndSelectDocNbr($docNbr);
+      $self->check_and_select_doc_nbr($docNbr);
       $self->wlog( "$docType to xml config '$label' doc $docNbr selected"
                  , $self->C_DOCSELECTED
                  );
@@ -378,7 +378,7 @@ sub loadInputFile
       if( $log->is_last_success )
       {
         $cfg->load;
-        $self->checkAndSelectDocNbr($docNbr);
+        $self->check_and_select_doc_nbr($docNbr);
         $self->wlog( "Adding new data2xml config '$label', doc $docNbr selected"
                    , $self->C_CONFADDDED
                    );
@@ -404,11 +404,11 @@ sub loadInputFile
 # configuration specification of the users input file. Then select
 # and load the configuration.
 #
-sub selectInputFile
+sub select_input_file
 {
   my( $self, $docNbr) = @_;
 
-  my $label = $self->dataLabel;
+  my $label = $self->data_label;
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   $docNbr //= 0;
 
@@ -416,7 +416,7 @@ sub selectInputFile
   if( $cfg->hasConfigObject($label) )
   {
     $cfg->select_config_object($label);
-    $self->checkAndSelectDocNbr($docNbr);
+    $self->check_and_select_doc_nbr($docNbr);
     $self->wlog( "data to config '$label', doc $docNbr selected"
                , $self->C_INPUTFILESELECTED
                );
@@ -434,7 +434,7 @@ sub selectInputFile
 
 ################################################################################
 #
-sub checkAndSelectDocNbr
+sub check_and_select_doc_nbr
 {
   my( $self, $docNbr) = @_;
 
@@ -457,12 +457,12 @@ sub checkAndSelectDocNbr
 
 ################################################################################
 #
-sub getDefaultAttributes
+sub get_default_attributes
 {
   my($self) = @_;
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  my $yd = $self->getDataItem('nodeData');
+  my $yd = $self->get_data_item('node_data');
   my $attr = {};
 
   $attr->{id} = $yd->{id} if $yd->{id};
@@ -474,11 +474,11 @@ sub getDefaultAttributes
 
 ################################################################################
 #
-sub setDefaultAttributes
+sub set_default_attributes
 {
   my( $self, $node, $idPrefix) = @_;
 
-  my $yd = $self->getDataItem('nodeData');
+  my $yd = $self->get_data_item('node_data');
   my $attr = {};
   $idPrefix //= '';
 
@@ -489,7 +489,7 @@ sub setDefaultAttributes
 
 ################################################################################
 #
-sub getDollarVar
+sub get_dollar_var
 {
   my( $self, $key) = @_;
 
@@ -500,7 +500,7 @@ sub getDollarVar
 
 ################################################################################
 #
-sub setDollarVar
+sub set_dollar_var
 {
   my( $self, %kvPairs) = @_;
 
@@ -515,7 +515,7 @@ sub setDollarVar
 
 ################################################################################
 #
-sub getDVarNames
+sub get_dvar_names
 {
   my( $self) = @_;
   my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
@@ -524,7 +524,7 @@ sub getDVarNames
 
 ################################################################################
 #
-sub clearDVars
+sub clear_dvars
 {
   my( $self) = @_;
   my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;

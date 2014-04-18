@@ -10,7 +10,9 @@ use 5.016003;
 use Moose;
 use Moose::Util::TypeConstraints;
 
-extends qw(Data2any::Tools);
+extends qw(AppState::Ext::Constants);
+#extends qw(Data2any::Tools);
+require Data2any::Tools;
 
 use AppState;
 
@@ -22,6 +24,18 @@ require File::Path;
 use DateTime;
 
 #-------------------------------------------------------------------------------
+# Tools
+#
+has _tls =>
+    ( is                => 'ro'
+    , isa               => 'Data2any::Tools'
+    , default           => sub { return Data2any::Tools->new; }
+    , handles           => [qw(   request_document
+                                set_dollar_var
+                              )
+                           ]
+    );
+
 # Translator
 #
 has _translators =>
@@ -191,7 +205,10 @@ has logging =>
 #
 sub BUILD
 {
-  my($self) = @_;
+  my( $self, $options) = @_;
+
+  $self->_tls->set_input_file($options->{input_file});
+  $self->_tls->set_data_file_type($options->{data_file_type});
 
   if( $self->meta->is_mutable )
   {
@@ -266,20 +283,20 @@ sub _initialize
   #-----------------------------------------------------------------------------
   # Add and select data2xml config and select also requested document.
   #
-  if( $self->hasInputData and $self->hasDataLabel )
+  if( $self->_tls->has_input_data and $self->_tls->has_data_label )
   {
-    $self->loadData;
+    $self->_tls->load_data;
   }
 
-  elsif( $self->hasInputFile )
+  elsif( $self->_tls->has_input_file )
   {
-    $self->loadInputFile;
+    $self->_tls->load_input_file;
   }
 
   else
   {
-    $self->wlog( 'One of the options inputData with dataLabel or'
-               . ' inputFile is missing'
+    $self->wlog( 'One of the options input_data with data_label or'
+               . ' input_file is missing'
                , $self->C_NOINPUTFILE
                );
   }
@@ -301,8 +318,8 @@ sub _initialize
                     , $date->ymd . ' ' . $date->hms
                     );
 
-    $self->clearDVars;
-    $self->setDollarVar( file => $userFilePath, date => $date->ymd
+    $self->_tls->clear_dvars;
+    $self->set_dollar_var( file => $userFilePath, date => $date->ymd
                        , time => $date->hms, version_Data2xml => $VERSION
                        );
     $cfg->save;
@@ -324,7 +341,7 @@ sub _preprocess
 {
   my($self) = @_;
 
-  $self->selectInputFile($self->requestDocument);
+  $self->_tls->select_input_file($self->_tls->request_document);
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   my $root = $cfg->get_document;
 
@@ -383,7 +400,7 @@ sub _preprocess
   if( defined $self->getProperty('SetVariables') )
   {
     my $dvs = $self->getProperty('SetVariables');
-    $self->setDollarVar(%$dvs) if ref $dvs eq 'HASH';
+    $self->set_dollar_var(%$dvs) if ref $dvs eq 'HASH';
   }
 }
 
@@ -445,19 +462,19 @@ sub _processTree
 
   # Set information in this treebuild data for the plugins
   #
-  $tbd->{inputFile}             = $self->inputFile;
-  $tbd->{dataFileType}          = $self->dataFileType;
-  $tbd->{inputData}             = $self->inputData;
-  $tbd->{dataLabel}             = $self->dataLabel;
-  $tbd->{requestDocument}       = $self->requestDocument;
+  $tbd->{input_file}             = $self->_tls->input_file;
+  $tbd->{data_file_type}         = $self->_tls->data_file_type;
+  $tbd->{input_data}             = $self->_tls->input_data;
+  $tbd->{data_label}             = $self->_tls->data_label;
+  $tbd->{request_document}       = $self->_tls->request_document;
 
-  # Define also some dollar variables to be used as $inputFile and so on
+  # Define also some dollar variables to be used as $input_file and so on
   #
-  $self->setDollarVar( inputFile        => $self->inputFile
-                     , dataFileType     => $self->dataFileType
-                     , inputData        => $self->inputData
-                     , dataLabel        => $self->dataLabel
-                     , requestDocument  => $self->requestDocument
+  $self->set_dollar_var( input_file        => $self->_tls->input_file
+                     , data_file_type    => $self->_tls->data_file_type
+                     , input_data        => $self->_tls->input_data
+                     , data_label        => $self->_tls->data_label
+                     , request_document  => $self->_tls->request_document
                      );
 
   # Build the tree from the raw data at the document root into a nodetree
@@ -507,7 +524,7 @@ sub postprocess
     # Get the input filename or data label to get the path to the file.
     # Get the basename from it.
     #
-    my $ifile = $self->inputFile || $self->dataLabel;
+    my $ifile = $self->_tls->input_file || $self->_tls->data_label;
     my( $basename, $directories, $suffix)
        = File::Basename::fileparse( $ifile, qr/\.[^.]*$/);
 
@@ -616,10 +633,10 @@ Data2xml - Perl extension to convert a specially formatted data file into xml.
   require Data2xml;
 
   my $filename = shift @ARGV;
-  my $yaml2xml = Data2xml->new( inputFile => $filename
-                              , dataFileType => 'Yaml'
+  my $yaml2xml = Data2xml->new( input_file => $filename
+                              , data_file_type => 'Yaml'
                               , logging => 1
-                              , requestDocument => 0
+                              , request_document => 0
                               );
   $yaml2xml->nodetreeFromData;
   $yaml2xml->convert2xml;
@@ -651,10 +668,10 @@ Data2xml - Perl extension to convert a specially formatted data file into xml.
     ]
   ];
 
-  my $d2xml = Data2xml->new( inputData => $data
-                           , dataLabel => 'internal'
+  my $d2xml = Data2xml->new( input_data => $data
+                           , data_label => 'internal'
                            , logging => 1
-                           , requestDocument => 2
+                           , request_document => 2
                            );
 
   $d2xml->nodetreeFromData;
