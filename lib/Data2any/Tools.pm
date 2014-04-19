@@ -14,6 +14,7 @@ extends qw(AppState::Ext::Constants);
 
 use AppState;
 use AppState::NodeTree::Node;
+use AppState::NodeTree::NodeGlobal;
 
 #-------------------------------------------------------------------------------
 #
@@ -88,11 +89,6 @@ has request_document =>
 #
 # parent_node  Node of the parent
 #
-# tree_build_data
-#              Hash for user convenience. It can communicate information from
-#              one node object to the other because it is given to every
-#              node object.
-#
 # type         Type of the object data. This is a way to see which part is
 #              used to create the module.
 #              Types can be;
@@ -108,14 +104,14 @@ has request_document =>
 # data.
 #
 # When type is C_NT_NODEMODULE
-# The used attributes: module_name, parent_node, node_data, tree_build_data
+# The used attributes: module_name, parent_node, node_data
 #
 # When type is C_NT_VALUEDMODULE
-# The used attributes: module_name, parent_node, node_data, tree_build_data
+# The used attributes: module_name, parent_node, node_data
 #
 # When type is C_NT_ATTRIBUTEMODULE
 # The used attributes: node, attribute_name, module_name, parent_node,
-#                      node_data, tree_build_data
+#                      node_data
 #
 has object_data =>
     ( is                => 'rw'
@@ -451,22 +447,29 @@ sub get_dollar_var
 {
   my( $self, $key) = @_;
 
-  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
+  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  return $node_global->get_global_data($key);
+
+#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
 #say STDERR "Get KV: $tbd, $key = ", $tbd->{dollarVariables}{$key};
-  return $tbd->{dollarVariables}{$key};
+#  return $tbd->{dollarVariables}{$key};
 }
 
 ################################################################################
+# Store the data in a field in the node global data. Any node can reach this
 #
 sub set_dollar_var
 {
   my( $self, %kvPairs) = @_;
 
-  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-  foreach my $key (keys %kvPairs)
-  {
-    $tbd->{dollarVariables}{$key} = $kvPairs{$key};
-  }
+  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  $node_global->set_global_data(%kvPairs);
+
+#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
+#  foreach my $key (keys %kvPairs)
+#  {
+#    $tbd->{dollarVariables}{$key} = $kvPairs{$key};
+#  }
 }
 
 ################################################################################
@@ -474,8 +477,12 @@ sub set_dollar_var
 sub get_dvar_names
 {
   my( $self) = @_;
-  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-  return (keys %{$tbd->{dollarVariables}});
+
+  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  return $node_global->get_global_data_keys;
+  
+#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
+#  return (keys %{$tbd->{dollarVariables}});
 }
 
 ################################################################################
@@ -483,8 +490,13 @@ sub get_dvar_names
 sub clear_dvars
 {
   my( $self) = @_;
-  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-  $tbd->{dollarVariables} = {};
+return;
+
+  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  $node_global->clear_global_data;
+
+#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
+#  $tbd->{dollarVariables} = {};
 }
 
 #-------------------------------------------------------------------------------

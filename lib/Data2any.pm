@@ -4,7 +4,7 @@ use Modern::Perl;
 use namespace::autoclean;
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
 
-use version; our $VERSION = '' . version->parse('v0.1.0');
+use version; our $VERSION = '' . version->parse('v0.1.1');
 use 5.016003;
 
 use Moose;
@@ -320,8 +320,8 @@ sub _initialize
 
     $self->_tls->clear_dvars;
     $self->set_dollar_var( file => $userFilePath, date => $date->ymd
-                       , time => $date->hms, version_Data2xml => $VERSION
-                       );
+                         , time => $date->hms, version_Data2any => $VERSION
+                         );
     $cfg->save;
 
     $self->wlog( "User data loaded", $self->C_DATALOADED);
@@ -458,31 +458,48 @@ sub _processTree
   # via the process() function.
   #
   my $nt = AppState->instance->get_app_object('NodeTree');
-  my $tbd = $nt->tree_build_data;
+#  my $tbd = $nt->tree_build_data;
 
   # Set information in this treebuild data for the plugins
   #
-  $tbd->{input_file}             = $self->_tls->input_file;
-  $tbd->{data_file_type}         = $self->_tls->data_file_type;
-  $tbd->{input_data}             = $self->_tls->input_data;
-  $tbd->{data_label}             = $self->_tls->data_label;
-  $tbd->{request_document}       = $self->_tls->request_document;
+#  $tbd->{input_file}             = $self->_tls->input_file;
+#  $tbd->{data_file_type}         = $self->_tls->data_file_type;
+#  $tbd->{input_data}             = $self->_tls->input_data;
+#  $tbd->{data_label}             = $self->_tls->data_label;
+#  $tbd->{request_document}       = $self->_tls->request_document;
 
-  # Define also some dollar variables to be used as $input_file and so on
+  # Define some dollar variables to be used when nodetree is build
   #
-  $self->set_dollar_var( input_file        => $self->_tls->input_file
-                     , data_file_type    => $self->_tls->data_file_type
-                     , input_data        => $self->_tls->input_data
-                     , data_label        => $self->_tls->data_label
-                     , request_document  => $self->_tls->request_document
-                     );
+  $self->set_dollar_var
+         ( input_file                   => $self->_tls->input_file
+         , data_file_type               => $self->_tls->data_file_type
+         , input_data                   => $self->_tls->input_data
+         , data_label                   => $self->_tls->data_label
+         , request_document             => $self->_tls->request_document
+         );
 
   # Build the tree from the raw data at the document root into a nodetree
   # First set some information which can be read when the tree is build.
   #
   # Convert the data into a node tree.
   #
-  $self->setNodeTree($nt->convert_to_node_tree($topRawEntries));
+  my $node_tree = $nt->convert_to_node_tree($topRawEntries);
+  
+  # Set information in this tree data for the plugins to use. The top node has
+  # access to global data so we will store it there. Any node can reach this
+  # again to get the info back.
+  #
+#  $node_tree->set_global_data
+#              ( input_file              => $self->_tls->input_file
+#              , data_file_type          => $self->_tls->data_file_type
+#              , input_data              => $self->_tls->input_data
+#              , data_label              => $self->_tls->data_label
+#              , request_document        => $self->_tls->request_document
+#              );
+
+  # Save the node tree
+  #
+  $self->setNodeTree($node_tree);
 }
 
 ################################################################################

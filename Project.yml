@@ -128,10 +128,7 @@ Tests:
       - t/900-Data2any.t
 Todo:
   2014-04-17: |
-    remove objectData from Tools and TranslatorTools. When nodetree exists use
-    the global store in the node. Can even be one independend node.
-
-    With this change, tree_build_data of Nodetree can also be removed. dollar
-    variables are stored there so must also go to global data in the node
+    tree_build_data of Nodetree can be removed. dollar variables are to be
+    stored in the NodeGlobal store.
     
 
