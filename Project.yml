@@ -122,6 +122,14 @@ Readme:
         use Data2any::Gui;
         my $obj = Data2any::Gui->new();
 Tests:
+  - module: Data2any::Any::IncludeDocument
+    constructor: new
+    test-programs:
+      - t/100-IncludeDocument.t
+  - module: Data2any::Any::LoremIpsum
+    constructor: new
+    test-programs:
+      - t/110-LoremIpsum.t
   - module: Data2any
     constructor: new
     test-programs:

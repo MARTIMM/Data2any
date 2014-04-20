@@ -30,10 +30,7 @@ has _tls =>
     ( is                => 'ro'
     , isa               => 'Data2any::Tools'
     , default           => sub { return Data2any::Tools->new; }
-    , handles           => [qw(   request_document
-                                set_dollar_var
-                              )
-                           ]
+    , handles           => [qw( request_document set_dollar_var)]
     );
 
 # Translator
