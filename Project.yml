@@ -45,7 +45,35 @@ Application:
       - 0
       - 0
       - 1
-Bugs: {}
+Bugs:
+ 2014-04-19: 
+  - issue:
+     module: Data2any::Xml
+     version: 0.1.1
+     priority: 1
+     description: >
+       shortcuttags do not seem to work anymore
+     fix: 2014 04 22
+     version: 0.2.0
+     description: >
+       First copied the parser from Data2any::Aux::TranslatorTools back to
+       Data2any::Xml and changed some references. The shortcuts were translated
+       to xml tags so the proper place would be the Xml module.
+
+ 2014-04-21: 
+  - issue:
+     module: Data2any::Any::LoremIpsum
+     version: 0.0.1
+     priority: 1
+     description: >
+       use utf-8 with an odd character generated in LoremIpsum gives problems in
+       xmllint
+     fix: 2014 04 22
+     version: 0.0.2
+     description: >
+       Usage of Encode module fixed the error. Need to check on other places
+       to see if Encode is needed.
+    
 Changes:
   - date: 2014-04-09
     descriptions:
@@ -81,6 +109,7 @@ Git:
       - '*.tar.gz'
       - '*.tar.b2'
       - pm_to_blib
+      - t/XmlHelper
     repository: 
 Manifest-skip-list:
   - \./\..*
@@ -138,5 +167,6 @@ Todo:
   2014-04-17: |
     tree_build_data of Nodetree can be removed. dollar variables are to be
     stored in the NodeGlobal store.
-    
+  2014-04-21: |
+    use utf-8 with a odd character generated in LoremIpsum gives problems in
 

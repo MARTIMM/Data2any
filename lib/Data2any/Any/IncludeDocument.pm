@@ -10,13 +10,13 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 use AppState;
-require Data2any::Tools;
+require Data2any::Aux::BlessedStructTools;
 
 #-------------------------------------------------------------------------------
 has _tls =>
     ( is                => 'ro'
-    , isa               => 'Data2any::Tools'
-    , default           => sub { return Data2any::Tools->new; }
+    , isa               => 'Data2any::Aux::BlessedStructTools'
+    , default           => sub { return Data2any::Aux::BlessedStructTools->new; }
 #    , handles           => [qw( set_dollar_var request_document)]
     );
 

@@ -1,18 +1,19 @@
 package Data2any::Any::LoremIpsum;
 
-use version; our $VERSION = '' . version->parse("v0.0.1");
+use version; our $VERSION = '' . version->parse("v0.0.2");
 use 5.014003;
 
 use namespace::autoclean;
-use utf8;
-use feature 'unicode_strings';
+#use utf8;
+#use feature 'unicode_strings';
+require Encode;
 
 use Modern::Perl;
 use Moose;
 extends 'AppState::Ext::Constants';
 
 use AppState;
-require Data2any::Tools;
+require Data2any::Aux::BlessedStructTools;
 require Text::Lorem;
 
 #-------------------------------------------------------------------------------
@@ -20,8 +21,8 @@ require Text::Lorem;
 #
 has _tls =>
     ( is                => 'ro'
-    , isa               => 'Data2any::Tools'
-    , default           => sub { return Data2any::Tools->new; }
+    , isa               => 'Data2any::Aux::BlessedStructTools'
+    , default           => sub { return Data2any::Aux::BlessedStructTools->new; }
 #    , handles           => [qw( set_dollar_var request_document)]
     );
 
@@ -65,8 +66,6 @@ sub process
   my $type = $nd->{type} // 'sentence';
   my $size = $nd->{size} // 1;
   my $ipsum;
-
-say STDERR "Lorem Ipsum: $type, $size";
 
   if( $type eq 'standard-1500' )
   {
@@ -175,11 +174,11 @@ EOIPSUM
 
   elsif( $type eq 'veggie-ipsum' )
   {
-#horseradish courgette maize spinach prairie turnip jícama coriander quandong
     $ipsum =<<EOIPSUM;
 Veggies sunt bona vobis, proinde vos postulo esse magis grape pea sprouts
-horseradish courgette maize spinach prairie turnip j\N{U+00ED}cama coriander quandong
+horseradish courgette maize spinach prairie turnip jicama coriander quandong
 gourd broccoli seakale gumbo. Parsley corn lentil zucchini radicchio maize
+horseradish courgette maize spinach prairie turnip j\N{U+00ED}cama coriander quandong
 burdock avocado sea lettuce. Garbanzo tigernut earthnut pea fennel.
 EOIPSUM
   }
@@ -200,7 +199,7 @@ EOIPSUM
     $self->wlog( ["Type $type not supported"], $self->C_LI_TYPENOTSUPPORTED);
   }
 
-  $self->_tls->extend_node_tree([$ipsum]);
+  $self->_tls->extend_node_tree([Encode::encode( 'utf8', $ipsum)]);
 }
 
 #-------------------------------------------------------------------------------

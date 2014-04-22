@@ -2,6 +2,9 @@ package Data2any;
 
 use Modern::Perl;
 use namespace::autoclean;
+#use utf8;
+#use feature 'unicode_strings';
+
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
 
 use version; our $VERSION = '' . version->parse('v0.1.1');
@@ -11,8 +14,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 extends qw(AppState::Ext::Constants);
-#extends qw(Data2any::Tools);
-require Data2any::Tools;
+require Data2any::Aux::D2aTools;
 
 use AppState;
 
@@ -28,8 +30,8 @@ use DateTime;
 #
 has _tls =>
     ( is                => 'ro'
-    , isa               => 'Data2any::Tools'
-    , default           => sub { return Data2any::Tools->new; }
+    , isa               => 'Data2any::Aux::D2aTools'
+    , default           => sub { return Data2any::Aux::D2aTools->new; }
     , handles           => [qw( request_document set_dollar_var)]
     );
 
@@ -64,8 +66,11 @@ has _translators =>
                                          ]
                             }
                           );
-        $pm->drop_plugin('Tools');
-        $pm->drop_plugin('TranslatorTools');
+        
+        # The following are not translators.
+        #
+#        $pm->drop_plugin('Tools');
+#        $pm->drop_plugin('TranslatorTools');
 #$pm->list_plugin_names;
 
         $self->_translatorTypes(join '|', $pm->get_plugin_names);
@@ -130,19 +135,6 @@ has nodeTree =>
     , isa               => 'AppState::NodeTree::NodeDOM'
     , writer            => 'setNodeTree'
     );
-
-#has treeTraverseData =>
-#    ( is                => 'rw'
-#    , isa               => 'HashRef'
-#    , default           => sub { return {}; }
-#    , init_arg          => undef
-#    , traits            => ['Hash']
-#    , handles           =>
-#      { setTTD          => 'set'
-#      , getTTD          => 'get'
-#      , clearTTD        => 'clear'
-#      }
-#    );
 
 has properties =>
     ( is                => 'rw'
@@ -315,7 +307,7 @@ sub _initialize
                     , $date->ymd . ' ' . $date->hms
                     );
 
-    $self->_tls->clear_dvars;
+#    $self->_tls->clear_dvars;
     $self->set_dollar_var( file => $userFilePath, date => $date->ymd
                          , time => $date->hms, version_Data2any => $VERSION
                          );

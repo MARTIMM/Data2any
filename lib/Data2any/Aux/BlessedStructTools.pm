@@ -1,4 +1,4 @@
-package Data2any::Tools;
+package Data2any::Aux::BlessedStructTools;
 
 use Modern::Perl;
 use namespace::autoclean;

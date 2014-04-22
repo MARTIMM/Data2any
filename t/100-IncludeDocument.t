@@ -122,7 +122,7 @@ $fail ? fail("$phase failed")
 # Drop the instance and remove directories
 #
 $app->cleanup;
-#File::Path::remove_tree($config_dir);
+File::Path::remove_tree($config_dir);
 
 done_testing();
 exit(0);

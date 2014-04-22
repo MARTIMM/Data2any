@@ -7,5 +7,14 @@ Project.yml
 t/900-Data2any.t
 
 lib/Data2any.pm
-lib/Data2any/Tools.pm
-lib/Data2any/TranslatorTools.pm
+
+lib/Data2any/Any/IncludeDocument.pm
+lib/Data2any/Any/LoremIpsum.pm
+
+lib/Data2any/Aux/D2aTools.pm
+lib/Data2any/Aux/BlessedStructTools.pm
+lib/Data2any/Aux/TranslatorTools.pm
+
+t/100-IncludeDocument.t
+t/110-LoremIpsum.t
+t/900-Data2any.t
