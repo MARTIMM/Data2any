@@ -1,6 +1,6 @@
 package Data2any::Any::LoremIpsum;
 
-use version; our $VERSION = '' . version->parse("v0.0.2");
+use version; our $VERSION = '' . version->parse("v0.0.3");
 use 5.014003;
 
 use namespace::autoclean;
@@ -199,7 +199,7 @@ EOIPSUM
     $self->wlog( ["Type $type not supported"], $self->C_LI_TYPENOTSUPPORTED);
   }
 
-  $self->_tls->extend_node_tree([Encode::encode( 'utf8', $ipsum)]);
+  $self->_tls->extend_node_tree([Encode::encode( 'UTF-8', $ipsum)]);
 }
 
 #-------------------------------------------------------------------------------

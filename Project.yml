@@ -46,6 +46,20 @@ Application:
       - 0
       - 1
 Bugs:
+ 2014-04-23: 
+  - issue:
+     module: Data2any::Xml
+     version: 0.2.0
+     priority: 1
+     description: >
+       References to characters like &copy; didn't parse when using numbers
+       like &#x0000; or  &#0000; for hexadecimal and decimal numbers
+       respectively.
+     fix: 2014 04 23
+     version: 0.2.1
+     description: >
+       Changed the regular expression in convertValue().
+
  2014-04-19: 
   - issue:
      module: Data2any::Xml
@@ -75,12 +89,16 @@ Bugs:
        to see if Encode is needed.
     
 Changes:
+  - date: 2014-04-24
+    description: >
+      Changed argument 'utf8' into 'UTF-8' for encoding/decoding
+    module: Data2any::Any::LoremIpsum
+    version: 0.0.3
   - date: 2014-04-09
     descriptions:
       - Original version; created by buildBuilder version v0.0.1
       - Use AppState modules in program and module
-    module: Data2any::Gui
-    program: program.pl
+    module: Data2any
     version: 0.0.1
 Cpan:
   Account: MARTIMM
