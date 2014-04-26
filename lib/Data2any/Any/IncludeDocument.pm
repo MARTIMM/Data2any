@@ -34,6 +34,7 @@ sub BUILD
     #
     $self->code_reset;
     $self->const( 'C_ID_TYPENOTSUPPORTED', qw(M_WARNING));
+    $self->const( 'C_ID_EXPRFAILED', qw(M_WARNING));
 
     __PACKAGE__->meta->make_immutable;
   }
@@ -56,48 +57,95 @@ sub process
   my $nd = $self->_tls->get_data_item('node_data');
   my $cfg = AppState->instance->get_app_object('ConfigManager');
 
-  # Get and check type
-  #
-  my $type = $nd->{type};
-  $type //= 'includeThis';
-
-  # Include a document from a file
-  #
-  if( $type eq 'include' )
+  my $include_ok = 0;
+  my( $operand_1, $operator, $operand_2);
+  my $test_expression = $nd->{load_if};
+  if( ref $test_expression eq 'ARRAY' )
   {
-    # Get the variables to include a file
-    #
-    $self->_tls->set_input_file($nd->{reference});
-    $self->_tls->request_document($nd->{document});
-    $self->_tls->set_data_file_type('Yaml');
-
-    # Load the file, clone the data and extend the nodetree at the parentnode.
-    #
-    $self->_tls->load_input_file;
-    my $copy = $cfg->cloneDocument;
-    $self->_tls->extend_node_tree($copy);
+    ( $operand_1, $operator, $operand_2) = @$test_expression;
+    $operand_1 = $self->_tls->get_dollar_var($operand_1) if $operand_1 =~ m/\$/;
+    $operand_2 = $self->_tls->get_dollar_var($operand_2) if $operand_2 =~ m/\$/;
+    if( defined $operand_1 and defined $operand_2
+     and ( $operator eq 'eq' and $operand_1 eq $operand_2
+        or $operator eq 'lt' and $operand_1 lt $operand_2
+        or $operator eq 'le' and $operand_1 le $operand_2
+        or $operator eq 'gt' and $operand_1 gt $operand_2
+        or $operator eq 'ge' and $operand_1 ge $operand_2
+        or $operator eq '==' and $operand_1 == $operand_2
+        or $operator eq '<'  and $operand_1 <  $operand_2
+        or $operator eq '<=' and $operand_1 <= $operand_2
+        or $operator eq '>'  and $operand_1 >  $operand_2
+        or $operator eq '>=' and $operand_1 >= $operand_2
+         )
+      )
+    {
+      $include_ok = 1;
+    }
   }
-
-  # Include a document from the current file
+  
+  # No test means always ok to load
   #
-  elsif( $type eq 'includeThis' )
-  {
-    # Get the variables to include a file. The filename is found in the
-    # structure used to communicate items from Data2any and NodeTree
-    # to the module.
-    #
-    $self->_tls->set_input_file($self->_tls->get_dollar_var('input_file'));
-    $self->_tls->set_data_file_type('Yaml');
-    $self->_tls->request_document($nd->{document});
-
-    $self->_tls->load_input_file;
-    my $copy = $cfg->cloneDocument;
-    $self->_tls->extend_node_tree($copy);
-  }
-
   else
   {
-    $self->wlog( "Type $type not supported", $self->C_ID_TYPENOTSUPPORTED);
+    $include_ok = 1;
+  }
+
+  if( $include_ok )
+  {
+    # Get and check type
+    #
+    my $type = $nd->{type};
+    $type //= 'includeThis';
+
+    # Include a document from a file
+    #
+    if( $type eq 'include' )
+    {
+      # Get the variables to include a file
+      #
+      $self->_tls->set_input_file($nd->{reference});
+      $self->_tls->request_document($nd->{document});
+      $self->_tls->set_data_file_type('Yaml');
+
+      # Load the file, clone the data and extend the nodetree at the parentnode.
+      #
+      $self->_tls->load_input_file;
+      my $copy = $cfg->cloneDocument;
+      $self->_tls->extend_node_tree($copy);
+    }
+
+    # Include a document from the current file
+    #
+    elsif( $type eq 'includeThis' )
+    {
+      # Get the variables to include a file. The filename is found in the
+      # structure used to communicate items from Data2any and NodeTree
+      # to the module.
+      #
+      $self->_tls->set_input_file($self->_tls->get_dollar_var('input_file'));
+      $self->_tls->set_data_file_type('Yaml');
+      $self->_tls->request_document($nd->{document});
+
+      $self->_tls->load_input_file;
+      my $copy = $cfg->cloneDocument;
+      $self->_tls->extend_node_tree($copy);
+    }
+
+    else
+    {
+      $self->wlog( "Type $type not supported", $self->C_ID_TYPENOTSUPPORTED);
+    }
+  }
+  
+  else
+  {
+    $operand_1 //= $test_expression->[0];
+    $operand_2 //= $test_expression->[2];
+    $self->wlog( <<EOLOG
+Expression for load_if failed: '$operand_1 $operator $operand_2'
+EOLOG
+               , $self->C_ID_EXPRFAILED
+               );
   }
 }
 

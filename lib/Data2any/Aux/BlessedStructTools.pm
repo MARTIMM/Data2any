@@ -447,12 +447,11 @@ sub get_dollar_var
 {
   my( $self, $key) = @_;
 
+  # Remove the '$' on front if there is still one
+  #
+  $key =~ s/^\$//;
   my $node_global = AppState::NodeTree::NodeGlobal->instance;
   return $node_global->get_global_data($key);
-
-#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#say STDERR "Get KV: $tbd, $key = ", $tbd->{dollarVariables}{$key};
-#  return $tbd->{dollarVariables}{$key};
 }
 
 ################################################################################
@@ -464,12 +463,6 @@ sub set_dollar_var
 
   my $node_global = AppState::NodeTree::NodeGlobal->instance;
   $node_global->set_global_data(%kvPairs);
-
-#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#  foreach my $key (keys %kvPairs)
-#  {
-#    $tbd->{dollarVariables}{$key} = $kvPairs{$key};
-#  }
 }
 
 ################################################################################

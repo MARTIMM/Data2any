@@ -130,7 +130,7 @@ Git:
       - t/XmlHelper
     repository: 
 Manifest-skip-list:
-  - \./\..*
+  - '^\..*'
   - '\bData2any-Gui-[\d\.\_]+'
   - '^MYMETA\.'
   - \bBuild$

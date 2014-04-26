@@ -110,7 +110,7 @@ subtype 'Data2any::TranslatorType'
 has translator =>
     ( is                => 'rw'
     , isa               => 'Data2any::TranslatorType'
-    , default           => 'Xml'
+#    , default           => 'Xml'
     , trigger           =>
       sub
       {
@@ -148,7 +148,7 @@ has properties =>
       }
     );
 
-# Select keyword of the SendTo control. STDOUT is reserved to send xml result to
+# Select keyword of the SendTo control. STDOUT is reserved to send result to
 # standard output and NOOUT is used to inhibit any output. The default will be
 # STDOUT. If no SendTo is defined, output will also go to STDOUT.
 #
@@ -196,8 +196,8 @@ sub BUILD
 {
   my( $self, $options) = @_;
 
-  $self->_tls->set_input_file($options->{input_file});
-  $self->_tls->set_data_file_type($options->{data_file_type});
+  $self->_tls->set_input_file($options->{input_file} // '--No Defined Filename--.txt');
+  $self->_tls->set_data_file_type($options->{data_file_type} // 'Yaml');
 
   if( $self->meta->is_mutable )
   {
@@ -211,6 +211,7 @@ sub BUILD
     $self->const( 'C_DATALOADED',       qw(M_INFO M_SUCCESS));
 #    $self->const( 'C_',qw(M_INFO M_SUCCESS));
 
+    $self->const( 'C_CANNOTRUNSUB',     qw(M_WARNING));
     $self->const( 'C_FAILMODCONF',      qw(M_ERROR));
     $self->const( 'C_NOINPUTFILE',      qw(M_ERROR M_FAIL));
     $self->const( 'C_ROOTNOARRAY',      qw(M_ERROR M_FAIL));
@@ -349,7 +350,9 @@ sub _preprocess
     #
     foreach my $k (keys %$propertySet)
     {
-      if( $k =~ m/^DocumentControl/ )
+      if( $k =~ m/^DocumentControl/
+      and defined $propertySet->{DocumentControl}
+        )
       {
         $DocumentControlKeyFound = 1;
         $self->properties($propertySet->{DocumentControl});
@@ -376,13 +379,29 @@ sub _preprocess
   #-----------------------------------------------------------------------------
   # Initialize translator
   #
-  my $trobj = $self->_translators->get_object( { name => $self->translator});
-  $trobj->init($self);
+  my $trobj = $self->get_translator_object;
+  if( $trobj->can('init') )
+  {
+    $trobj->init($self);
+  }
+  
+  else
+  {
+    $self->wlog( 'Cannot run subroutine init()', $self->C_CANNOTRUNSUB);
+  }
 
   #-----------------------------------------------------------------------------
   # Let the translator preprocess some stuff
   #
-  $trobj->preprocess( $self, $root);
+  if( $trobj->can('preprocess') )
+  {
+    $trobj->preprocess( $self, $root);
+  }
+  
+  else
+  {
+    $self->wlog( 'Cannot run subroutine preprocess()', $self->C_CANNOTRUNSUB);
+  }
 
   # Get variables from the DocumentControl section
   #
@@ -439,7 +458,6 @@ sub _processTree
 {
   my( $self) = @_;
 
-#  my $trobj = $self->_translators->get_object( { name => $self->translator});
   my $topRawEntries = $self->topRawEntries;
 
   # Get NodeTree object and the treebuild data hash. This is the hash which
@@ -504,8 +522,8 @@ sub transform_nodetree
   # Traverse the tree. First setup of handlers then traverse depth
   # first method 2.
   #
-  my $level = 0;
-  my $xmlResult = '';
+#  my $level = 0;
+#  my $xmlResult = '';
 
 #  $self->clearTTD;
   my $traverseType = $self->traverse_type;
@@ -518,8 +536,18 @@ sub postprocess
 {
   my( $self) = @_;
 
-  my $trobj = $self->_translators->get_object( { name => $self->translator});
-  my $resultText = $trobj->postprocess($self) // '';
+  my $trobj = $self->get_translator_object;
+  my $resultText;
+  if( $trobj->can('postprocess') )
+  {
+    $resultText = $trobj->postprocess($self) // '';
+  }
+  
+  else
+  {
+    $resultText = '';
+    $self->wlog( 'Cannot run subroutine postprocess()', $self->C_CANNOTRUNSUB);
+  }
 
   #-----------------------------------------------------------------------------
   # Send result away except when NOOUT is requested. When NOOUT is used for
@@ -610,8 +638,27 @@ sub process_nodetree
 {
   my( $self) = @_;
 
-  my $trobj = $self->_translators->get_object( { name => $self->translator});
-  $trobj->process_nodetree($self);
+  my $trobj = $self->get_translator_object;
+  if( $trobj->can('process_nodetree') )
+  {
+    $trobj->process_nodetree($self);
+  }
+  
+  else
+  {
+    $self->wlog( 'Cannot run subroutine process_nodetree()'
+               , $self->C_CANNOTRUNSUB
+               );
+  }
+}
+
+################################################################################
+#
+sub get_translator_object
+{
+  my( $self) = @_;
+
+  return $self->_translators->get_object( { name => $self->translator});
 }
 
 #-------------------------------------------------------------------------------
