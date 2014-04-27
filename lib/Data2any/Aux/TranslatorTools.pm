@@ -80,7 +80,7 @@ sub BUILD
 {
   my($self) = @_;
 
-  AppState->instance->log_init('TLS');
+  AppState->instance->log_init('.TT');
 
   if( $self->meta->is_mutable )
   {
@@ -345,64 +345,6 @@ sub set_default_attributes
   $node->addAttr(id => $yd->{id} . "_$idPrefix") if $yd->{id};
   $node->addAttr(class => $yd->{class}) if $yd->{class};
 #  $node->addAttr(name => $yd->{name} . "_$idPrefix") if $yd->{name};
-}
-
-################################################################################
-#
-sub get_dollar_var
-{
-  my( $self, $key) = @_;
-
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
-  return $node_global->get_global_data($key);
-
-#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#say STDERR "Get KV: $tbd, $key = ", $tbd->{dollarVariables}{$key};
-#  return $tbd->{dollarVariables}{$key};
-}
-
-################################################################################
-# Store the data in a field in the node global data. Any node can reach this
-#
-sub set_dollar_var
-{
-  my( $self, %kvPairs) = @_;
-
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
-  $node_global->set_global_data(%kvPairs);
-
-#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#  foreach my $key (keys %kvPairs)
-#  {
-#    $tbd->{dollarVariables}{$key} = $kvPairs{$key};
-#  }
-}
-
-################################################################################
-#
-sub get_dvar_names
-{
-  my( $self) = @_;
-
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
-  return $node_global->get_global_data_keys;
-  
-#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#  return (keys %{$tbd->{dollarVariables}});
-}
-
-################################################################################
-#
-sub clear_dvars
-{
-  my( $self) = @_;
-return;
-
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
-  $node_global->clear_global_data;
-
-#  my $tbd = AppState->instance->get_app_object('NodeTree')->tree_build_data;
-#  $tbd->{dollarVariables} = {};
 }
 
 #-------------------------------------------------------------------------------

@@ -10,14 +10,20 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 use AppState;
+require Data2any::Aux::GeneralTools;
 require Data2any::Aux::BlessedStructTools;
 
 #-------------------------------------------------------------------------------
-has _tls =>
+has _gtls =>
+    ( is                => 'ro'
+    , isa               => 'Data2any::Aux::GeneralTools'
+    , default           => sub { return Data2any::Aux::GeneralTools->new; }
+    );
+
+has _btls =>
     ( is                => 'ro'
     , isa               => 'Data2any::Aux::BlessedStructTools'
     , default           => sub { return Data2any::Aux::BlessedStructTools->new; }
-#    , handles           => [qw( set_dollar_var request_document)]
     );
 
 #-------------------------------------------------------------------------------
@@ -42,7 +48,7 @@ sub BUILD
   # Pick up the argument given by NodeTree::convert_to_node_tree() and store
   # it in the tools area object_data.
   #
-  $self->_tls->object_data($attributes->{object_data});
+  $self->_btls->object_data($attributes->{object_data});
 }
 
 #-------------------------------------------------------------------------------
@@ -54,7 +60,7 @@ sub process
 {
   my($self) = @_;
 
-  my $nd = $self->_tls->get_data_item('node_data');
+  my $nd = $self->_btls->get_data_item('node_data');
   my $cfg = AppState->instance->get_app_object('ConfigManager');
 
   my $include_ok = 0;
@@ -63,8 +69,8 @@ sub process
   if( ref $test_expression eq 'ARRAY' )
   {
     ( $operand_1, $operator, $operand_2) = @$test_expression;
-    $operand_1 = $self->_tls->get_dollar_var($operand_1) if $operand_1 =~ m/\$/;
-    $operand_2 = $self->_tls->get_dollar_var($operand_2) if $operand_2 =~ m/\$/;
+    $operand_1 = $self->_gtls->get_dollar_var($operand_1) if $operand_1 =~ m/\$/;
+    $operand_2 = $self->_gtls->get_dollar_var($operand_2) if $operand_2 =~ m/\$/;
     if( defined $operand_1 and defined $operand_2
      and ( $operator eq 'eq' and $operand_1 eq $operand_2
         or $operator eq 'lt' and $operand_1 lt $operand_2
@@ -103,15 +109,15 @@ sub process
     {
       # Get the variables to include a file
       #
-      $self->_tls->set_input_file($nd->{reference});
-      $self->_tls->request_document($nd->{document});
-      $self->_tls->set_data_file_type('Yaml');
+      $self->_btls->set_input_file($nd->{reference});
+      $self->_btls->request_document($nd->{document});
+      $self->_btls->set_data_file_type('Yaml');
 
       # Load the file, clone the data and extend the nodetree at the parentnode.
       #
-      $self->_tls->load_input_file;
+      $self->_btls->load_input_file;
       my $copy = $cfg->cloneDocument;
-      $self->_tls->extend_node_tree($copy);
+      $self->_btls->extend_node_tree($copy);
     }
 
     # Include a document from the current file
@@ -122,13 +128,13 @@ sub process
       # structure used to communicate items from Data2any and NodeTree
       # to the module.
       #
-      $self->_tls->set_input_file($self->_tls->get_dollar_var('input_file'));
-      $self->_tls->set_data_file_type('Yaml');
-      $self->_tls->request_document($nd->{document});
+      $self->_btls->set_input_file($self->_gtls->get_dollar_var('input_file'));
+      $self->_btls->set_data_file_type('Yaml');
+      $self->_btls->request_document($nd->{document});
 
-      $self->_tls->load_input_file;
+      $self->_btls->load_input_file;
       my $copy = $cfg->cloneDocument;
-      $self->_tls->extend_node_tree($copy);
+      $self->_btls->extend_node_tree($copy);
     }
 
     else

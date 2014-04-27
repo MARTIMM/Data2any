@@ -14,6 +14,7 @@ use Moose;
 use Moose::Util::TypeConstraints;
 
 extends qw(AppState::Ext::Constants);
+require Data2any::Aux::GeneralTools;
 require Data2any::Aux::D2aTools;
 
 use AppState;
@@ -28,11 +29,18 @@ use DateTime;
 #-------------------------------------------------------------------------------
 # Tools
 #
-has _tls =>
+has _gtls =>
+    ( is                => 'ro'
+    , isa               => 'Data2any::Aux::GeneralTools'
+    , default           => sub { return Data2any::Aux::GeneralTools->new; }
+#    , handles           => [qw( set_dollar_var)]
+    );
+
+has _dtls =>
     ( is                => 'ro'
     , isa               => 'Data2any::Aux::D2aTools'
     , default           => sub { return Data2any::Aux::D2aTools->new; }
-    , handles           => [qw( request_document set_dollar_var)]
+    , handles           => [qw( request_document)]
     );
 
 # Translator
@@ -196,8 +204,8 @@ sub BUILD
 {
   my( $self, $options) = @_;
 
-  $self->_tls->set_input_file($options->{input_file} // '--No Defined Filename--.txt');
-  $self->_tls->set_data_file_type($options->{data_file_type} // 'Yaml');
+  $self->_dtls->set_input_file($options->{input_file} // '--No Defined Filename--.txt');
+  $self->_dtls->set_data_file_type($options->{data_file_type} // 'Yaml');
 
   if( $self->meta->is_mutable )
   {
@@ -273,14 +281,14 @@ sub _initialize
   #-----------------------------------------------------------------------------
   # Add and select data2xml config and select also requested document.
   #
-  if( $self->_tls->has_input_data and $self->_tls->has_data_label )
+  if( $self->_dtls->has_input_data and $self->_dtls->has_data_label )
   {
-    $self->_tls->load_data;
+    $self->_dtls->load_data;
   }
 
-  elsif( $self->_tls->has_input_file )
+  elsif( $self->_dtls->has_input_file )
   {
-    $self->_tls->load_input_file;
+    $self->_dtls->load_input_file;
   }
 
   else
@@ -308,10 +316,11 @@ sub _initialize
                     , $date->ymd . ' ' . $date->hms
                     );
 
-#    $self->_tls->clear_dvars;
-    $self->set_dollar_var( file => $userFilePath, date => $date->ymd
-                         , time => $date->hms, version_Data2any => $VERSION
-                         );
+#    $self->_dtls->clear_dvars;
+    $self->_gtls->set_dollar_var( file => $userFilePath, date => $date->ymd
+                                , time => $date->hms
+                                , version_Data2any => $VERSION
+                                );
     $cfg->save;
 
     $self->wlog( "User data loaded", $self->C_DATALOADED);
@@ -331,7 +340,7 @@ sub _preprocess
 {
   my($self) = @_;
 
-  $self->_tls->select_input_file($self->_tls->request_document);
+  $self->_dtls->select_input_file($self->_dtls->request_document);
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   my $root = $cfg->get_document;
 
@@ -408,7 +417,7 @@ sub _preprocess
   if( defined $self->getProperty('SetVariables') )
   {
     my $dvs = $self->getProperty('SetVariables');
-    $self->set_dollar_var(%$dvs) if ref $dvs eq 'HASH';
+    $self->_gtls->set_dollar_var(%$dvs) if ref $dvs eq 'HASH';
   }
 }
 
@@ -469,20 +478,20 @@ sub _processTree
 
   # Set information in this treebuild data for the plugins
   #
-#  $tbd->{input_file}             = $self->_tls->input_file;
-#  $tbd->{data_file_type}         = $self->_tls->data_file_type;
-#  $tbd->{input_data}             = $self->_tls->input_data;
-#  $tbd->{data_label}             = $self->_tls->data_label;
-#  $tbd->{request_document}       = $self->_tls->request_document;
+#  $tbd->{input_file}             = $self->_dtls->input_file;
+#  $tbd->{data_file_type}         = $self->_dtls->data_file_type;
+#  $tbd->{input_data}             = $self->_dtls->input_data;
+#  $tbd->{data_label}             = $self->_dtls->data_label;
+#  $tbd->{request_document}       = $self->_dtls->request_document;
 
   # Define some dollar variables to be used when nodetree is build
   #
-  $self->set_dollar_var
-         ( input_file                   => $self->_tls->input_file
-         , data_file_type               => $self->_tls->data_file_type
-         , input_data                   => $self->_tls->input_data
-         , data_label                   => $self->_tls->data_label
-         , request_document             => $self->_tls->request_document
+  $self->_gtls->set_dollar_var
+         ( input_file                   => $self->_dtls->input_file
+         , data_file_type               => $self->_dtls->data_file_type
+         , input_data                   => $self->_dtls->input_data
+         , data_label                   => $self->_dtls->data_label
+         , request_document             => $self->_dtls->request_document
          );
 
   # Build the tree from the raw data at the document root into a nodetree
@@ -497,11 +506,11 @@ sub _processTree
   # again to get the info back.
   #
 #  $node_tree->set_global_data
-#              ( input_file              => $self->_tls->input_file
-#              , data_file_type          => $self->_tls->data_file_type
-#              , input_data              => $self->_tls->input_data
-#              , data_label              => $self->_tls->data_label
-#              , request_document        => $self->_tls->request_document
+#              ( input_file              => $self->_dtls->input_file
+#              , data_file_type          => $self->_dtls->data_file_type
+#              , input_data              => $self->_dtls->input_data
+#              , data_label              => $self->_dtls->data_label
+#              , request_document        => $self->_dtls->request_document
 #              );
 
   # Save the node tree
@@ -558,7 +567,7 @@ sub postprocess
     # Get the input filename or data label to get the path to the file.
     # Get the basename from it.
     #
-    my $ifile = $self->_tls->input_file || $self->_tls->data_label;
+    my $ifile = $self->_dtls->input_file || $self->_dtls->data_label;
     my( $basename, $directories, $suffix)
        = File::Basename::fileparse( $ifile, qr/\.[^.]*$/);
 

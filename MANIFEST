@@ -14,6 +14,7 @@ lib/Data2any/Any/LoremIpsum.pm
 lib/Data2any/Aux/D2aTools.pm
 lib/Data2any/Aux/BlessedStructTools.pm
 lib/Data2any/Aux/TranslatorTools.pm
+lib/Data2any/Aux/GeneralTools.pm
 
 t/100-IncludeDocument.t
 t/110-LoremIpsum.t
