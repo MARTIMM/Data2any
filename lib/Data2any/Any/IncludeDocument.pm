@@ -172,6 +172,7 @@ Data2any::Any::IncludeFile - Include other documents from the same or other file
      type: include
      reference: some-directory/some-document.yml
      document: 1
+     load_if: [ $select_doc, eq, myDoc]
 
 =item * Example 2
 
@@ -189,6 +190,13 @@ Include
 The following options can be used;
 
 =over 2
+
+=item * I<load_if>. A test to be executed to find out if the document must be
+loaded or not. The argument is an array of which the first and 3rd element is
+an operand and the 2nd is an operator. The operands can be text, numbers or
+variables. The operator can be one of eq, gt, ge, lt, le, ==, <, <=, > and >=.
+The first five are for comparing text operands and the second five are for
+comparing numbers. About variables see L<Data2any>.
 
 =item * I<type>. Type of usage. Type can be C<include> to include a document
 from another file or C<includeThis> to include a document from the same file
