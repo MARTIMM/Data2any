@@ -107,7 +107,7 @@ $id->process;
 # Cannot use $parent because we use the call Node->new() directly
 # and therefor points to the old structure.
 #
-$dom = $id->_btls->get_data_item('parent_node')->xpath_get_root_node;
+$dom = $id->btls->get_data_item('parent_node')->xpath_get_root_node;
 
 $nt->node_handler_up($nh);
 

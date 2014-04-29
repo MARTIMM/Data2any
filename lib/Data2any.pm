@@ -15,7 +15,6 @@ use Moose::Util::TypeConstraints;
 
 extends qw(AppState::Ext::Constants);
 require Data2any::Aux::GeneralTools;
-require Data2any::Aux::D2aTools;
 
 use AppState;
 
@@ -27,20 +26,16 @@ require File::Path;
 use DateTime;
 
 #-------------------------------------------------------------------------------
-# Tools
+# General tools
 #
 has _gtls =>
     ( is                => 'ro'
     , isa               => 'Data2any::Aux::GeneralTools'
     , default           => sub { return Data2any::Aux::GeneralTools->new; }
-#    , handles           => [qw( set_dollar_var)]
-    );
-
-has _dtls =>
-    ( is                => 'ro'
-    , isa               => 'Data2any::Aux::D2aTools'
-    , default           => sub { return Data2any::Aux::D2aTools->new; }
-    , handles           => [qw( request_document)]
+    , handles           => [qw( set_dollar_var input_file data_file_type
+                                request_document
+                              )
+                           ]
     );
 
 # Translator
@@ -77,8 +72,6 @@ has _translators =>
         
         # The following are not translators.
         #
-#        $pm->drop_plugin('Tools');
-#        $pm->drop_plugin('TranslatorTools');
 #$pm->list_plugin_names;
 
         $self->_translatorTypes(join '|', $pm->get_plugin_names);
@@ -204,8 +197,8 @@ sub BUILD
 {
   my( $self, $options) = @_;
 
-  $self->_dtls->set_input_file($options->{input_file} // '--No Defined Filename--.txt');
-  $self->_dtls->set_data_file_type($options->{data_file_type} // 'Yaml');
+  $self->_gtls->set_input_file($options->{input_file} // '--No Defined Filename--.txt');
+  $self->_gtls->set_data_file_type($options->{data_file_type} // 'Yaml');
 
   if( $self->meta->is_mutable )
   {
@@ -281,14 +274,14 @@ sub _initialize
   #-----------------------------------------------------------------------------
   # Add and select data2xml config and select also requested document.
   #
-  if( $self->_dtls->has_input_data and $self->_dtls->has_data_label )
+  if( $self->_gtls->has_input_data and $self->_gtls->has_data_label )
   {
-    $self->_dtls->load_data;
+    $self->_gtls->load_data;
   }
 
-  elsif( $self->_dtls->has_input_file )
+  elsif( $self->_gtls->has_input_file )
   {
-    $self->_dtls->load_input_file;
+    $self->_gtls->load_input_file;
   }
 
   else
@@ -340,7 +333,7 @@ sub _preprocess
 {
   my($self) = @_;
 
-  $self->_dtls->select_input_file($self->_dtls->request_document);
+  $self->_gtls->select_input_file($self->_gtls->request_document);
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   my $root = $cfg->get_document;
 
@@ -474,24 +467,15 @@ sub _processTree
   # via the process() function.
   #
   my $nt = AppState->instance->get_app_object('NodeTree');
-#  my $tbd = $nt->tree_build_data;
-
-  # Set information in this treebuild data for the plugins
-  #
-#  $tbd->{input_file}             = $self->_dtls->input_file;
-#  $tbd->{data_file_type}         = $self->_dtls->data_file_type;
-#  $tbd->{input_data}             = $self->_dtls->input_data;
-#  $tbd->{data_label}             = $self->_dtls->data_label;
-#  $tbd->{request_document}       = $self->_dtls->request_document;
 
   # Define some dollar variables to be used when nodetree is build
   #
   $self->_gtls->set_dollar_var
-         ( input_file                   => $self->_dtls->input_file
-         , data_file_type               => $self->_dtls->data_file_type
-         , input_data                   => $self->_dtls->input_data
-         , data_label                   => $self->_dtls->data_label
-         , request_document             => $self->_dtls->request_document
+         ( input_file                   => $self->_gtls->input_file
+         , data_file_type               => $self->_gtls->data_file_type
+         , input_data                   => $self->_gtls->input_data
+         , data_label                   => $self->_gtls->data_label
+         , request_document             => $self->_gtls->request_document
          );
 
   # Build the tree from the raw data at the document root into a nodetree
@@ -500,18 +484,6 @@ sub _processTree
   # Convert the data into a node tree.
   #
   my $node_tree = $nt->convert_to_node_tree($topRawEntries);
-  
-  # Set information in this tree data for the plugins to use. The top node has
-  # access to global data so we will store it there. Any node can reach this
-  # again to get the info back.
-  #
-#  $node_tree->set_global_data
-#              ( input_file              => $self->_dtls->input_file
-#              , data_file_type          => $self->_dtls->data_file_type
-#              , input_data              => $self->_dtls->input_data
-#              , data_label              => $self->_dtls->data_label
-#              , request_document        => $self->_dtls->request_document
-#              );
 
   # Save the node tree
   #
@@ -567,7 +539,7 @@ sub postprocess
     # Get the input filename or data label to get the path to the file.
     # Get the basename from it.
     #
-    my $ifile = $self->_dtls->input_file || $self->_dtls->data_label;
+    my $ifile = $self->_gtls->input_file || $self->_gtls->data_label;
     my( $basename, $directories, $suffix)
        = File::Basename::fileparse( $ifile, qr/\.[^.]*$/);
 

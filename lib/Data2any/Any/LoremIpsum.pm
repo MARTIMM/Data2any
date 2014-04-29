@@ -14,16 +14,22 @@ extends 'AppState::Ext::Constants';
 
 use AppState;
 require Data2any::Aux::BlessedStructTools;
+require Data2any::Aux::GeneralTools;
 require Text::Lorem;
 
 #-------------------------------------------------------------------------------
 # Tools
 #
-has _tls =>
+has gtls =>
+    ( is                => 'ro'
+    , isa               => 'Data2any::Aux::GeneralTools'
+    , default           => sub { return Data2any::Aux::GeneralTools->new; }
+    );
+
+has btls =>
     ( is                => 'ro'
     , isa               => 'Data2any::Aux::BlessedStructTools'
     , default           => sub { return Data2any::Aux::BlessedStructTools->new; }
-#    , handles           => [qw( set_dollar_var request_document)]
     );
 
 #-------------------------------------------------------------------------------
@@ -47,7 +53,7 @@ sub BUILD
   # Pick up the argument given by NodeTree::convert_to_node_tree() and store
   # it in the tools area object_data.
   #
-  $self->_tls->object_data($attributes->{object_data});
+  $self->btls->object_data($attributes->{object_data});
 }
 
 #-------------------------------------------------------------------------------
@@ -59,7 +65,7 @@ sub process
 {
   my($self) = @_;
 
-  my $nd = $self->_tls->get_data_item('node_data');
+  my $nd = $self->btls->get_data_item('node_data');
 
   # Get and check type
   #
@@ -199,7 +205,7 @@ EOIPSUM
     $self->wlog( ["Type $type not supported"], $self->C_LI_TYPENOTSUPPORTED);
   }
 
-  $self->_tls->extend_node_tree([Encode::encode( 'UTF-8', $ipsum)]);
+  $self->btls->extend_node_tree([Encode::encode( 'UTF-8', $ipsum)]);
 }
 
 #-------------------------------------------------------------------------------

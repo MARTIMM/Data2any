@@ -55,7 +55,8 @@ Bugs:
        References to characters like &copy; didn't parse when using numbers
        like &#x0000; or  &#0000; for hexadecimal and decimal numbers
        respectively.
-     fix: 2014 04 23
+    fix:
+     date: 2014 04 23
      version: 0.2.1
      description: >
        Changed the regular expression in convertValue().
@@ -67,12 +68,12 @@ Bugs:
      priority: 1
      description: >
        shortcuttags do not seem to work anymore
-     fix: 2014 04 22
-     version: 0.2.0
-     description: >
-       First copied the parser from Data2any::Aux::TranslatorTools back to
-       Data2any::Xml and changed some references. The shortcuts were translated
-       to xml tags so the proper place would be the Xml module.
+    fix: 2014 04 22
+    version: 0.2.0
+    description: >
+      First copied the parser from Data2any::Aux::TranslatorTools back to
+      Data2any::Xml and changed some references. The shortcuts were translated
+      to xml tags so the proper place would be the Xml module.
 
  2014-04-21: 
   - issue:
@@ -82,11 +83,11 @@ Bugs:
      description: >
        use utf-8 with an odd character generated in LoremIpsum gives problems in
        xmllint
-     fix: 2014 04 22
-     version: 0.0.2
-     description: >
-       Usage of Encode module fixed the error. Need to check on other places
-       to see if Encode is needed.
+    fix: 2014 04 22
+    version: 0.0.2
+    description: >
+      Usage of Encode module fixed the error. Need to check on other places
+      to see if Encode is needed.
     
 Changes:
   - date: 2014-04-24
