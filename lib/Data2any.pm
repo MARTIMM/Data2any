@@ -32,7 +32,7 @@ has _gtls =>
     ( is                => 'ro'
     , isa               => 'Data2any::Aux::GeneralTools'
     , default           => sub { return Data2any::Aux::GeneralTools->new; }
-    , handles           => [qw( set_dollar_var input_file data_file_type
+    , handles           => [qw( set_variables input_file data_file_type
                                 request_document
                               )
                            ]
@@ -310,7 +310,7 @@ sub _initialize
                     );
 
 #    $self->_dtls->clear_dvars;
-    $self->_gtls->set_dollar_var( file => $userFilePath, date => $date->ymd
+    $self->_gtls->set_variables( file => $userFilePath, date => $date->ymd
                                 , time => $date->hms
                                 , version_Data2any => $VERSION
                                 );
@@ -410,7 +410,7 @@ sub _preprocess
   if( defined $self->getProperty('SetVariables') )
   {
     my $dvs = $self->getProperty('SetVariables');
-    $self->_gtls->set_dollar_var(%$dvs) if ref $dvs eq 'HASH';
+    $self->_gtls->set_variables(%$dvs) if ref $dvs eq 'HASH';
   }
 }
 
@@ -468,9 +468,9 @@ sub _processTree
   #
   my $nt = AppState->instance->get_app_object('NodeTree');
 
-  # Define some dollar variables to be used when nodetree is build
+  # Define some variables to be used when nodetree is build
   #
-  $self->_gtls->set_dollar_var
+  $self->_gtls->set_variables
          ( input_file                   => $self->_gtls->input_file
          , data_file_type               => $self->_gtls->data_file_type
          , input_data                   => $self->_gtls->input_data

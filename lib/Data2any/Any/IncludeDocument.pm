@@ -73,8 +73,8 @@ sub process
   if( ref $test_expression eq 'ARRAY' )
   {
     ( $operand_1, $operator, $operand_2) = @$test_expression;
-    $operand_1 = $self->gtls->get_dollar_var($operand_1) if $operand_1 =~ m/\$/;
-    $operand_2 = $self->gtls->get_dollar_var($operand_2) if $operand_2 =~ m/\$/;
+    $operand_1 = $self->gtls->get_variables($operand_1) if $operand_1 =~ m/\$/;
+    $operand_2 = $self->gtls->get_variables($operand_2) if $operand_2 =~ m/\$/;
     if( defined $operand_1 and defined $operand_2
      and ( $operator eq 'eq' and $operand_1 eq $operand_2
         or $operator eq 'lt' and $operand_1 lt $operand_2
@@ -132,7 +132,7 @@ sub process
       # structure used to communicate items from Data2any and NodeTree
       # to the module.
       #
-      $self->gtls->set_input_file($self->gtls->get_dollar_var('input_file'));
+      $self->gtls->set_input_file($self->gtls->get_variables('input_file'));
       $self->gtls->set_data_file_type('Yaml');
       $self->gtls->request_document($nd->{document});
 
