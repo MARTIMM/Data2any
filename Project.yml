@@ -46,6 +46,16 @@ Application:
       - 0
       - 1
 Bugs:
+ 2014-05-10: 
+  - issue:
+     module Data2any::Aux::GeneralTools
+     version: 0.0.2
+     priority: 5
+     description: >
+      Naming of get_variables wrong, only return of one value. Temporarely
+      duplicated the code with function name get_variable.
+    fix:
+     
  2014-04-23: 
   - issue:
      module: Data2any::Xml

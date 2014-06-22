@@ -42,9 +42,9 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_ID_TYPENOTSUPPORTED', qw(M_WARNING));
-    $self->const( 'C_ID_EXPRFAILED', qw(M_WARNING));
+#    $self->code_reset;
+    $self->const( 'C_ID_TYPENOTSUPPORTED', 'M_WARNING');
+    $self->const( 'C_ID_EXPRFAILED', 'M_WARNING');
 
     __PACKAGE__->meta->make_immutable;
   }

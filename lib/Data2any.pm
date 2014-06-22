@@ -60,16 +60,14 @@ has _translators =>
         # Search for any modules
         #
         $pm->search_plugins( { base => $path
-                            , depthSearch => 1 + @lseps
-                            , searchRegex => qr@/Data2any/[A-Z][\w]+.pm$@
-                            , apiTest => [ qw( init preprocess
-                                               goingUpHandler goingDownHandler
-                                               atTheEndHandler postprocess
-                                             )
-                                         ]
-                            }
-                          );
-        
+                             , depthSearch => 1 + @lseps
+                             , searchRegex => qr@/Data2any/[A-Z][\w]+.pm$@
+                             , apiTest => [ qw( init preprocess postprocess
+                                              )
+                                          ]
+                             }
+                           );
+
         # The following are not translators.
         #
 #$pm->list_plugin_names;
@@ -206,18 +204,18 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_TRANSLATORSET',    qw(M_INFO M_SUCCESS));
-    $self->const( 'C_CONFLOADED',       qw(M_INFO M_SUCCESS));
-    $self->const( 'C_DATALOADED',       qw(M_INFO M_SUCCESS));
-#    $self->const( 'C_',qw(M_INFO M_SUCCESS));
+#    $self->code_reset;
+    $self->const( 'C_TRANSLATORSET',    'M_INFO');
+    $self->const( 'C_CONFLOADED',       'M_INFO');
+    $self->const( 'C_DATALOADED',       'M_INFO');
+#    $self->const( 'C_', 'M_INFO');
 
-    $self->const( 'C_CANNOTRUNSUB',     qw(M_WARNING));
-    $self->const( 'C_FAILMODCONF',      qw(M_ERROR));
-    $self->const( 'C_NOINPUTFILE',      qw(M_ERROR M_FAIL));
-    $self->const( 'C_ROOTNOARRAY',      qw(M_ERROR M_FAIL));
-    $self->const( 'C_NODEFAULTCFGOBJ',  qw(M_ERROR M_FAIL));
-#    $self->const( 'C_',qw(M_ERROR M_FAIL));
+    $self->const( 'C_CANNOTRUNSUB',     'M_WARNING');
+    $self->const( 'C_FAILMODCONF',      'M_ERROR');
+    $self->const( 'C_NOINPUTFILE',      'M_ERROR');
+    $self->const( 'C_ROOTNOARRAY',      'M_ERROR');
+    $self->const( 'C_NODEFAULTCFGOBJ',  'M_ERROR');
+#    $self->const( 'C_', 'M_ERROR');
 
     my $nt = AppState->instance->get_app_object('NodeTree');
     $self->meta->add_attribute( 'traverse_type'
@@ -373,6 +371,13 @@ sub _preprocess
   $self->setTopEntries($documentEntries);
 
   #-----------------------------------------------------------------------------
+  # Check encoding. If not defined, use UTF-8.
+  #
+  my $encoding = $self->getProperty('Encoding') // 'UTF-8';
+  $self->setProperty( 'Encoding', $encoding);
+  $self->_gtls->set_variables( 'Encoding' => $encoding);
+
+  #-----------------------------------------------------------------------------
   # Get the translator type from the DocumentControl section if any
   #
   my $tr = $self->getProperty('Translator');
@@ -397,7 +402,7 @@ sub _preprocess
   #
   if( $trobj->can('preprocess') )
   {
-    $trobj->preprocess( $self, $root);
+    $trobj->preprocess($root);
   }
   
   else
@@ -521,7 +526,7 @@ sub postprocess
   my $resultText;
   if( $trobj->can('postprocess') )
   {
-    $resultText = $trobj->postprocess($self) // '';
+    $resultText = $trobj->postprocess;
   }
   
   else
@@ -529,6 +534,8 @@ sub postprocess
     $resultText = '';
     $self->wlog( 'Cannot run subroutine postprocess()', $self->C_CANNOTRUNSUB);
   }
+
+  $resultText //= '';
 
   #-----------------------------------------------------------------------------
   # Send result away except when NOOUT is requested. When NOOUT is used for
@@ -622,7 +629,7 @@ sub process_nodetree
   my $trobj = $self->get_translator_object;
   if( $trobj->can('process_nodetree') )
   {
-    $trobj->process_nodetree($self);
+    $trobj->process_nodetree;
   }
   
   else

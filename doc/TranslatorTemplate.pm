@@ -15,14 +15,24 @@ use 5.016003;
 use namespace::autoclean;
 
 use Moose;
+use AppState;
+require Data2any::Aux::GeneralTools;
 
 extends 'Data2any::Aux::TranslatorTools';
 
-use AppState;
-
 #-------------------------------------------------------------------------------
 # 
-has '+version' =>	( default => $VERSION);
+has _gtls =>
+    ( is                => 'ro'
+    , isa               => 'Data2any::Aux::GeneralTools'
+    , default           => sub { return Data2any::Aux::GeneralTools->new; }
+    );
+
+has data2any =>
+    ( is                => 'ro'
+    , isa               => 'Data2any'
+    , writer            => '_set_data2any'
+    );
 
 
 #-------------------------------------------------------------------------------
@@ -52,13 +62,16 @@ sub init
 {
   my( $self, $data2any) = @_;
 
+  $self->_set_data2any($data2any);
 }
 
 #-------------------------------------------------------------------------------
 #
 sub preprocess
 {
-  my( $self, $data2any, $root) = @_;
+  my( $self, $root) = @_;
+
+  my $data2any = $self->data2any;
 
   # Prepare the traversal process. Other codes are C_NT_DEPTHFIRST1,
   # C_NT_BREADTHFIRST1 and C_NT_BREADTHFIRST2
@@ -84,7 +97,9 @@ sub preprocess
 #
 sub goingUpHandler
 {
-  my( $self, $data2any, $node) = @_;
+  my( $self, $node) = @_;
+
+  my $data2any = $self->data2any;
 
   if( ref($node) =~ m/AppState::NodeTree::Node(DOM|Root)/ )
   {
@@ -100,7 +115,9 @@ sub goingUpHandler
 #
 sub goingDownHandler
 {
-  my( $self, $data2any, $node) = @_;
+  my( $self, $node) = @_;
+
+  my $data2any = $self->data2any;
 
   if( ref($node) =~ m/AppState::NodeTree::Node(DOM|Root)/ )
   {
@@ -116,7 +133,9 @@ sub goingDownHandler
 #
 sub atTheEndHandler
 {
-  my( $self, $data2any, $node) = @_;
+  my( $self, $node) = @_;
+
+  my $data2any = $self->data2any;
 
   if( ref($node) =~ m/AppState::NodeTree::Node(DOM|Root)/ )
   {
@@ -136,14 +155,18 @@ sub atTheEndHandler
 #
 sub postprocess
 {
-  my( $self, $data2any) = @_;
+  my($self) = @_;
+
+  my $data2any = $self->data2any;
 }
 
 #-------------------------------------------------------------------------------
 #
 sub process_nodetree
 {
-  my( $self, $data2any) = @_;
+  my($self) = @_;
+
+  my $data2any = $self->data2any;
 }
 
 #-------------------------------------------------------------------------------

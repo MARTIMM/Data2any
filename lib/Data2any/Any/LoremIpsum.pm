@@ -6,7 +6,7 @@ use 5.014003;
 use namespace::autoclean;
 #use utf8;
 #use feature 'unicode_strings';
-require Encode;
+#require Encode;
 
 use Modern::Perl;
 use Moose;
@@ -44,8 +44,8 @@ sub BUILD
 
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_LI_TYPENOTSUPPORTED', qw(M_WARNING));
+#    $self->code_reset;
+    $self->const( 'C_LI_TYPENOTSUPPORTED', 'M_WARNING');
 
     __PACKAGE__->meta->make_immutable;
   }
@@ -205,7 +205,9 @@ EOIPSUM
     $self->wlog( ["Type $type not supported"], $self->C_LI_TYPENOTSUPPORTED);
   }
 
-  $self->btls->extend_node_tree([Encode::encode( 'UTF-8', $ipsum)]);
+#  my $encoding = $self->gtls->get_variable('Encoding');
+#  $self->btls->extend_node_tree([Encode::encode( $encoding, $ipsum)]);
+  $self->btls->extend_node_tree([$ipsum]);
 }
 
 #-------------------------------------------------------------------------------

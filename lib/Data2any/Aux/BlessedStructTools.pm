@@ -87,19 +87,19 @@ sub BUILD
   {
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_DOCSELECTED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_CONFADDDED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_INPUTFILESELECTED',qw(M_INFO M_SUCCESS));
-#    $self->const( '',qw(M_INFO M_SUCCESS));
+#    $self->code_reset;
+    $self->const( 'C_DOCSELECTED',      'M_INFO');
+    $self->const( 'C_CONFADDDED',       'M_INFO');
+    $self->const( 'C_INPUTFILESELECTED', 'M_INFO');
+#    $self->const( '', '');
 
-    $self->const( 'C_NOPROCESS',qw(M_WARNING M_FORCED));
-    $self->const( 'C_NODENOTCREATED',qw(M_ERROR M_FAIL));
-    $self->const( 'C_CONFADDFAIL',qw(M_ERROR M_FAIL));
-    $self->const( 'C_FILENOTDEFINED',qw(M_ERROR M_FAIL));
-    $self->const( 'C_SELECTFAIL',qw(M_ERROR M_FAIL));
-    $self->const( 'C_DOCNBRNOTFOUND',qw(M_WARNING M_FORCED));
-#    $self->const( '',qw(M_ERROR M_FAIL));
+    $self->const( 'C_NOPROCESS',        'M_WARNING');
+    $self->const( 'C_NODENOTCREATED',   'M_ERROR');
+    $self->const( 'C_CONFADDFAIL',      'M_ERROR');
+    $self->const( 'C_FILENOTDEFINED',   'M_ERROR');
+    $self->const( 'C_SELECTFAIL',       'M_ERROR');
+    $self->const( 'C_DOCNBRNOTFOUND',   'M_WARNING');
+#    $self->const( '', '');
 
     __PACKAGE__->meta->make_immutable;
   }

@@ -4,7 +4,7 @@ use Modern::Perl;
 use namespace::autoclean;
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
 
-use version; our $VERSION = '' . version->parse("v0.0.1");
+use version; our $VERSION = '' . version->parse("v0.0.2");
 use 5.012000;
 
 #-------------------------------------------------------------------------------
@@ -75,17 +75,17 @@ sub BUILD
   {
     # Error codes
     #
-    $self->code_reset;
-    $self->const( 'C_DOCSELECTED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_CONFADDDED',qw(M_INFO M_SUCCESS));
-    $self->const( 'C_INPUTFILESELECTED',qw(M_INFO M_SUCCESS));
-#    $self->const( '',qw(M_INFO M_SUCCESS));
+#    $self->code_reset;
+    $self->const( 'C_DOCSELECTED', 'M_INFO');
+    $self->const( 'C_CONFADDDED', 'M_INFO');
+    $self->const( 'C_INPUTFILESELECTED','M_INFO');
+#    $self->const( '', 'M_INFO');
 
-    $self->const( 'C_FILENOTDEFINED',qw(M_ERROR M_FAIL));
-    $self->const( 'C_CONFADDFAIL',qw(M_ERROR M_FAIL));
-    $self->const( 'C_SELECTFAIL',qw(M_ERROR M_FAIL));
-    $self->const( 'C_DOCNBRNOTFOUND',qw(M_WARNING M_FORCED));
-#    $self->const( '',qw(M_ERROR M_FAIL));
+    $self->const( 'C_FILENOTDEFINED', 'M_ERROR');
+    $self->const( 'C_CONFADDFAIL', 'M_ERROR');
+    $self->const( 'C_SELECTFAIL', 'M_ERROR');
+    $self->const( 'C_DOCNBRNOTFOUND', 'M_F_WARNING');
+#    $self->const( '', 'M_ERROR');
 
     __PACKAGE__->meta->make_immutable;
   }
@@ -284,6 +284,20 @@ sub check_and_select_doc_nbr
 
 ################################################################################
 #
+sub get_variable
+{
+  my( $self, $key) = @_;
+
+  # Variables in the Data2any distribution start with a dollar. Remove the
+  # '$' on front if there is still one.
+  #
+  $key =~ s/^\$//;
+  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  return $node_global->get_global_data($key);
+}
+
+################################################################################
+# !!!!!!!!!!!!!!! Aanpassen !!!!!!!!!!!
 sub get_variables
 {
   my( $self, $key) = @_;
