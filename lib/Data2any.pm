@@ -173,10 +173,10 @@ has logging =>
 
         if( $n eq 1 )
         {
-          $log->log_mask($self->SEVERITY);
-          $log->die_on_error(1);
-#         $log->show_on_error(0);
-          $log->show_on_warning(1);
+          $log->log_level($self->M_ERROR);
+#          $log->die_on_error(1);
+#          $log->show_on_error(0);
+#          $log->show_on_warning(1);
           $log->do_append_log(0);
 
           $log->start_logging;
@@ -217,12 +217,14 @@ sub BUILD
     $self->const( 'C_NODEFAULTCFGOBJ',  'M_ERROR');
 #    $self->const( 'C_', 'M_ERROR');
 
+    # Code is a dualvar => type is 'Any' instead of 'Int'.
+    #
     my $nt = AppState->instance->get_app_object('NodeTree');
     $self->meta->add_attribute( 'traverse_type'
                               , default         => $nt->C_NT_DEPTHFIRST2
                               , init_arg        => undef
                               , is              => 'rw'
-                              , isa             => 'Int'
+                              , isa             => 'Any'
                               );
 
     __PACKAGE__->meta->make_immutable;
