@@ -1,6 +1,6 @@
 package Data2any::Any::IncludeDocument;
 
-use version; our $VERSION = '' . version->parse('v0.0.1');
+use version; our $VERSION = '' . version->parse('v0.0.2');
 use 5.014003;
 
 use namespace::autoclean;
@@ -12,6 +12,13 @@ extends qw(AppState::Ext::Constants);
 use AppState;
 require Data2any::Aux::GeneralTools;
 require Data2any::Aux::BlessedStructTools;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+def_sts( 'C_ID_TYPENOTSUPPORTED', 'M_WARNING', 'Type %s not supported');
+def_sts( 'C_ID_EXPRFAILED', 'M_WARNING', 'Expression for load_if failed: "%s %s %s"');
 
 #-------------------------------------------------------------------------------
 # General tools
@@ -35,19 +42,7 @@ has btls =>
 sub BUILD
 {
   my( $self, $attributes) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    AppState->instance->log_init('.ID');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_ID_TYPENOTSUPPORTED', 'M_WARNING');
-    $self->const( 'C_ID_EXPRFAILED', 'M_WARNING');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  AppState->instance->log_init('.ID');
 
   # Pick up the argument given by NodeTree::convert_to_node_tree() and store
   # it in the tools area object_data.
@@ -92,7 +87,7 @@ sub process
       $include_ok = 1;
     }
   }
-  
+
   # No test means always ok to load
   #
   else
@@ -120,7 +115,7 @@ sub process
       # Load the file, clone the data and extend the nodetree at the parentnode.
       #
       $self->gtls->load_input_file;
-      my $copy = $cfg->cloneDocument;
+      my $copy = $cfg->clone_document;
       $self->btls->extend_node_tree($copy);
     }
 
@@ -137,29 +132,26 @@ sub process
       $self->gtls->request_document($nd->{document});
 
       $self->gtls->load_input_file;
-      my $copy = $cfg->cloneDocument;
+      my $copy = $cfg->clone_document;
       $self->btls->extend_node_tree($copy);
     }
 
     else
     {
-      $self->wlog( "Type $type not supported", $self->C_ID_TYPENOTSUPPORTED);
+      $self->log( $self->C_ID_TYPENOTSUPPORTED, [$type]);
     }
   }
-  
+
   else
   {
     $operand_1 //= $test_expression->[0];
     $operand_2 //= $test_expression->[2];
-    $self->wlog( <<EOLOG
-Expression for load_if failed: '$operand_1 $operator $operand_2'
-EOLOG
-               , $self->C_ID_EXPRFAILED
-               );
+    $self->log( $self->C_ID_EXPRFAILED, [ $operand_1, $operator, $operand_2]);
   }
 }
 
 #-------------------------------------------------------------------------------
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__
@@ -195,7 +187,7 @@ Data2any::Any::IncludeFile - Include other documents from the same or other file
 
 =head1 DESCRIPTION
 
-Include 
+Include
 
 The following options can be used;
 

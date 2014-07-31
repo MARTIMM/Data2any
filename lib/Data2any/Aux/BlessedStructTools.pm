@@ -1,11 +1,11 @@
 package Data2any::Aux::BlessedStructTools;
 
+use version; our $VERSION = '' . version->parse("v0.5.3");
+use 5.012000;
+
 use Modern::Perl;
 use namespace::autoclean;
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
-
-use version; our $VERSION = '' . version->parse("v0.5.2");
-use 5.012000;
 
 #-------------------------------------------------------------------------------
 use Moose;
@@ -15,6 +15,20 @@ extends qw(AppState::Ext::Constants);
 use AppState;
 use AppState::NodeTree::Node;
 use AppState::NodeTree::NodeGlobal;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+#def_sts( 'C_DOCSELECTED',       'M_INFO');
+#def_sts( 'C_CONFADDDED',        'M_INFO');
+#def_sts( 'C_INPUTFILESELECTED', 'M_INFO');
+def_sts( 'C_NOPROCESS',         'M_WARNING', 'Subroutine process() not defined in package %s');
+def_sts( 'C_NODENOTCREATED',    'M_ERROR', 'Node %s is not created');
+#def_sts( 'C_CONFADDFAIL',       'M_ERROR');
+#def_sts( 'C_FILENOTDEFINED',    'M_ERROR');
+#def_sts( 'C_SELECTFAIL',        'M_ERROR');
+#def_sts( 'C_DOCNBRNOTFOUND',    'M_WARNING');
 
 #-------------------------------------------------------------------------------
 # Object data is set by the NodeTree module. The data names that are set are;
@@ -85,21 +99,6 @@ sub BUILD
 
   if( $self->meta->is_mutable )
   {
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_DOCSELECTED',      'M_INFO');
-    $self->const( 'C_CONFADDDED',       'M_INFO');
-    $self->const( 'C_INPUTFILESELECTED', 'M_INFO');
-#    $self->const( '', '');
-
-    $self->const( 'C_NOPROCESS',        'M_WARNING');
-    $self->const( 'C_NODENOTCREATED',   'M_ERROR');
-    $self->const( 'C_CONFADDFAIL',      'M_ERROR');
-    $self->const( 'C_FILENOTDEFINED',   'M_ERROR');
-    $self->const( 'C_SELECTFAIL',       'M_ERROR');
-    $self->const( 'C_DOCNBRNOTFOUND',   'M_WARNING');
-#    $self->const( '', '');
 
     __PACKAGE__->meta->make_immutable;
   }
@@ -111,10 +110,7 @@ sub BUILD
 sub process
 {
   my( $self) = @_;
-  $self->wlog( 'Subroutine process() not defined in package '
-             . $self->get_data_item('module_name')
-             , $self->C_NOPROCESS
-             );
+  $self->log( $self->C_NOPROCESS, [$self->get_data_item('module_name')]);
 }
 
 ################################################################################
@@ -130,17 +126,11 @@ sub mk_node
     $node = AppState::NodeTree::Node->new( name => $nodename);
     $node->attributes($attributes) if ref($attributes) eq 'HASH';
     $parent_node->link_with_node($node);
-
-#    if( ref($parent_node) eq 'AppState::NodeTree::Node' )
-#    {
-#      $node->parent($parent_node);
-#      $parent_node->pushChild($node);
-#    }
   }
 
   else
   {
-    $self->wlog( "Node '$nodename' is not created", $self->C_NODENOTCREATED);
+    $self->log( $self->C_NODENOTCREATED, [$nodename]);
   }
 
   return $node;

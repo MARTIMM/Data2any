@@ -11,21 +11,15 @@ use AppState::NodeTree::Node;
 my $config_dir = 't/XmlHelper';
 my $test_file = "$config_dir/Work/test_file.yml";
 
-
 my $app = AppState->instance;
 $app->initialize( config_dir => $config_dir);
 $app->check_directories;
 
 my $log = $app->get_app_object('Log');
-#$log->die_on_error(1);
-#$log->show_on_error(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
+$log->do_append_log(0);
 $log->start_logging;
 
-$log->log_level($log->M_ERROR);
+$log->log_level($log->M_TRACE);
 
 #-------------------------------------------------------------------------------
 # Setup test file. A YAML file with two documents
@@ -42,7 +36,7 @@ close $YD;
 
 #-------------------------------------------------------------------------------
 #
-require_ok('Data2any::Any::IncludeDocument');
+use_ok('Data2any::Any::IncludeDocument');
 can_ok( 'Data2any::Any::IncludeDocument', 'new', 'process');
 
 #-------------------------------------------------------------------------------

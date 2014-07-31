@@ -90,7 +90,7 @@ ok( $parent_node->get_child(0)->value
   );
 
 #-------------------------------------------------------------------------------
-# 
+#
 # Test type is tuna-ipsum
 #
 $nt = $app->get_app_object('NodeTree');

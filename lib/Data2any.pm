@@ -1,14 +1,15 @@
 package Data2any;
 
+use version; our $VERSION = '' . version->parse('v0.1.2');
+use 5.016003;
+
 use Modern::Perl;
+
 use namespace::autoclean;
 #use utf8;
 #use feature 'unicode_strings';
 
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
-
-use version; our $VERSION = '' . version->parse('v0.1.1');
-use 5.016003;
 
 use Moose;
 use Moose::Util::TypeConstraints;
@@ -17,6 +18,7 @@ extends qw(AppState::Ext::Constants);
 require Data2any::Aux::GeneralTools;
 
 use AppState;
+#use AppState::Ext::Meta_Constants;
 
 require Cwd;
 require File::Basename;
@@ -52,27 +54,22 @@ has _translators =>
         my $pm = AppState->instance->get_app_object('PluginManager');
         my $path = Cwd::realpath($INC{"Data2any.pm"});
         $path =~ s@/Data2any.pm@@;
-
-        # Number of separators in the path is the depth of the base
-        #
-        my(@lseps) = $path =~ m@(/)@g;
+#say STDERR "TR: $path";
 
         # Search for any modules
         #
         $pm->search_plugins( { base => $path
-                             , depthSearch => 1 + @lseps
-                             , searchRegex => qr@/Data2any/[A-Z][\w]+.pm$@
-                             , apiTest => [ qw( init preprocess postprocess
-                                              )
-                                          ]
+                             , max_depth => 3
+                             , search_regex => qr@/Data2any/[A-Z][\w]+.pm$@
+                             , api_test => [ qw( init preprocess postprocess
+                                               )
+                                           ]
                              }
                            );
 
-        # The following are not translators.
-        #
 #$pm->list_plugin_names;
 
-        $self->_translatorTypes(join '|', $pm->get_plugin_names);
+        $self->_translatorTypes([$pm->get_plugin_names]);
         return $pm;
       }
     );
@@ -81,13 +78,13 @@ has _translators =>
 # initialization. Need to use non-moose variable because of test in subtype
 # can not use $self to use a getter such as $self->translatorTypes().
 #
-my $__translatorTypes__ = '';
+my $__translatorTypes__ = [];
 has translatorTypes =>
     ( is                => 'ro'
-    , isa               => 'Str'
+    , isa               => 'ArrayRef'
     , init_arg          => undef
     , writer            => '_translatorTypes'
-    , default           => ''
+    , default           => sub { return []; }
     , trigger           =>
       sub
       {
@@ -100,7 +97,7 @@ has translatorTypes =>
 #
 subtype 'Data2any::TranslatorType'
     => as 'Str'
-    => where { $_ =~ m/$__translatorTypes__/ }
+    => where { $_ ~~ $__translatorTypes__ }
     => message { "The translator type '$_' is not correct" };
 
 
@@ -109,7 +106,6 @@ subtype 'Data2any::TranslatorType'
 has translator =>
     ( is                => 'rw'
     , isa               => 'Data2any::TranslatorType'
-#    , default           => 'Xml'
     , trigger           =>
       sub
       {
@@ -205,17 +201,17 @@ sub BUILD
     # Error codes
     #
 #    $self->code_reset;
-    $self->const( 'C_TRANSLATORSET',    'M_INFO');
-    $self->const( 'C_CONFLOADED',       'M_INFO');
-    $self->const( 'C_DATALOADED',       'M_INFO');
-#    $self->const( 'C_', 'M_INFO');
+    $self->def_sts( 'C_TRANSLATORSET',    'M_INFO');
+    $self->def_sts( 'C_CONFLOADED',       'M_INFO');
+    $self->def_sts( 'C_DATALOADED',       'M_INFO');
+#    $self->def_sts( 'C_', 'M_INFO');
 
-    $self->const( 'C_CANNOTRUNSUB',     'M_WARNING');
-    $self->const( 'C_FAILMODCONF',      'M_ERROR');
-    $self->const( 'C_NOINPUTFILE',      'M_ERROR');
-    $self->const( 'C_ROOTNOARRAY',      'M_ERROR');
-    $self->const( 'C_NODEFAULTCFGOBJ',  'M_ERROR');
-#    $self->const( 'C_', 'M_ERROR');
+    $self->def_sts( 'C_CANNOTRUNSUB',     'M_WARNING');
+    $self->def_sts( 'C_FAILMODCONF',      'M_ERROR');
+    $self->def_sts( 'C_NOINPUTFILE',      'M_ERROR');
+    $self->def_sts( 'C_ROOTNOARRAY',      'M_ERROR');
+    $self->def_sts( 'C_NODEFAULTCFGOBJ',  'M_ERROR');
+#    $self->def_sts( 'C_', 'M_ERROR');
 
     # Code is a dualvar => type is 'Any' instead of 'Int'.
     #
@@ -260,13 +256,13 @@ sub _initialize
   #
   my $cfg = $app->get_app_object('ConfigManager');
   $cfg->modify_config_object( 'defaultConfigObject'
-                            , {requestFile => 'data2any'}
+                            , {request_file => 'data2any'}
                             );
   $self->wlog( "Error modifying default config", $self->C_FAILMODCONF)
     unless $log->is_last_success;
   $cfg->load;
   $cfg->add_documents({}) unless $cfg->nbr_documents;
-  $cfg->save unless -e $cfg->configFile;
+  $cfg->save unless -e $cfg->config_file;
 
 #say "D2a i: $self";
   $self->wlog( "Configuration file loaded", $self->C_CONFLOADED);
@@ -299,7 +295,7 @@ sub _initialize
 
   # Make an entry in the configfile recently loaded files.
   #
-  my $userFilePath = $cfg->configFile;
+  my $userFilePath = $cfg->config_file;
   $cfg->select_config_object('defaultConfigObject');
   if( $log->is_last_success )
   {
@@ -393,7 +389,7 @@ sub _preprocess
   {
     $trobj->init($self);
   }
-  
+
   else
   {
     $self->wlog( 'Cannot run subroutine init()', $self->C_CANNOTRUNSUB);
@@ -406,7 +402,7 @@ sub _preprocess
   {
     $trobj->preprocess($root);
   }
-  
+
   else
   {
     $self->wlog( 'Cannot run subroutine preprocess()', $self->C_CANNOTRUNSUB);
@@ -530,7 +526,7 @@ sub postprocess
   {
     $resultText = $trobj->postprocess;
   }
-  
+
   else
   {
     $resultText = '';
@@ -633,7 +629,7 @@ sub process_nodetree
   {
     $trobj->process_nodetree;
   }
-  
+
   else
   {
     $self->wlog( 'Cannot run subroutine process_nodetree()'

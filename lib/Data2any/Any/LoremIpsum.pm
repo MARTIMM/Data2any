@@ -1,6 +1,6 @@
 package Data2any::Any::LoremIpsum;
 
-use version; our $VERSION = '' . version->parse("v0.0.3");
+use version; our $VERSION = '' . version->parse("v0.0.4");
 use 5.014003;
 
 use namespace::autoclean;
@@ -16,6 +16,12 @@ use AppState;
 require Data2any::Aux::BlessedStructTools;
 require Data2any::Aux::GeneralTools;
 require Text::Lorem;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+def_sts( 'C_LI_TYPENOTSUPPORTED', 'M_WARNING', 'Type %s not supported');
 
 #-------------------------------------------------------------------------------
 # Tools
@@ -37,18 +43,7 @@ has btls =>
 sub BUILD
 {
   my( $self, $attributes) = @_;
-
-  if( $self->meta->is_mutable )
-  {
-    AppState->instance->log_init('.LI');
-
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_LI_TYPENOTSUPPORTED', 'M_WARNING');
-
-    __PACKAGE__->meta->make_immutable;
-  }
+  AppState->instance->log_init('.LI');
 
   # Pick up the argument given by NodeTree::convert_to_node_tree() and store
   # it in the tools area object_data.
@@ -202,7 +197,7 @@ EOIPSUM
 
   else
   {
-    $self->wlog( ["Type $type not supported"], $self->C_LI_TYPENOTSUPPORTED);
+    $self->log( $self->C_LI_TYPENOTSUPPORTED, [$type]);
   }
 
 #  my $encoding = $self->gtls->get_variable('Encoding');
@@ -211,6 +206,7 @@ EOIPSUM
 }
 
 #-------------------------------------------------------------------------------
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__
@@ -251,7 +247,7 @@ The following options can be used;
 
 =over 2
 
-=item * I<type>. The type of text to be generated. Type can be one of 
+=item * I<type>. The type of text to be generated. Type can be one of
 standard-1500, Cicero-45BC-1.10.32, Cicero-45BC-1.10.33, paragraphs, sentences,
 words, cupcake-ipsum, samuel-l-ipsum, tuna-ipsum, veggie-ipsum and cheese-ipsum.
 

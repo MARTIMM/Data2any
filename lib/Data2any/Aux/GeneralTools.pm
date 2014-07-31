@@ -4,7 +4,7 @@ use Modern::Perl;
 use namespace::autoclean;
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
 
-use version; our $VERSION = '' . version->parse("v0.0.2");
+use version; our $VERSION = '' . version->parse("v0.0.3");
 use 5.012000;
 
 #-------------------------------------------------------------------------------
@@ -13,6 +13,18 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 use AppState;
+use AppState::Ext::Meta_Constants;
+
+#-------------------------------------------------------------------------------
+# Error codes
+#
+def_sts( 'C_DOCSELECTED', 'M_INFO', '%s to xml config %s doc %s selected');
+def_sts( 'C_CONFADDDED', 'M_INFO', 'Adding new data2xml config %s, doc %s selected');
+def_sts( 'C_INPUTFILESELECTED','M_INFO', 'data to config %s, doc %s selected');
+def_sts( 'C_FILENOTDEFINED', 'M_ERROR', 'filename not defined');
+def_sts( 'C_CONFADDFAIL', 'M_ERROR', 'Failed to add data2xml config %s');
+def_sts( 'C_SELECTFAIL', 'M_ERROR', 'Failed to select data to xml config %s');
+def_sts( 'C_DOCNBRNOTFOUND', 'M_F_WARNING', 'Requested document not in range, set to %s');
 
 #-------------------------------------------------------------------------------
 # Filename and its type with data which must be translated to xml.
@@ -71,24 +83,6 @@ sub BUILD
 
   AppState->instance->log_init('.GT');
 
-  if( $self->meta->is_mutable )
-  {
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->const( 'C_DOCSELECTED', 'M_INFO');
-    $self->const( 'C_CONFADDDED', 'M_INFO');
-    $self->const( 'C_INPUTFILESELECTED','M_INFO');
-#    $self->const( '', 'M_INFO');
-
-    $self->const( 'C_FILENOTDEFINED', 'M_ERROR');
-    $self->const( 'C_CONFADDFAIL', 'M_ERROR');
-    $self->const( 'C_SELECTFAIL', 'M_ERROR');
-    $self->const( 'C_DOCNBRNOTFOUND', 'M_F_WARNING');
-#    $self->const( '', 'M_ERROR');
-
-    __PACKAGE__->meta->make_immutable;
-  }
 }
 
 ################################################################################
@@ -107,7 +101,7 @@ sub load_input_file
     my $docNbr = $self->request_document;
     my $docType = $self->data_file_type;
 
-    my $label = 'D2X-' . $filename;
+    my $label = 'D2A-' . $filename;
     $self->set_data_label($label);
 #say STDERR "Label: $label";
 
@@ -118,24 +112,22 @@ sub load_input_file
     $docNbr //= 0;
     $docType //= 'Yaml';
 
-    # Config is named like so "D2X-$filename". Now it is possible to convert
+    # Config is named like so "D2A-$filename". Now it is possible to convert
     # more files in several calls. When found, original settings will not be
     # changed. Only document is used to select document.
     #
-    if( $cfg->hasConfigObject($label) )
+    if( $cfg->has_config_object($label) )
     {
       $cfg->select_config_object($label);
       $self->check_and_select_doc_nbr($docNbr);
-      $self->wlog( "$docType to xml config '$label' doc $docNbr selected"
-                 , $self->C_DOCSELECTED
-                 );
+      $self->log( $self->C_DOCSELECTED, [ $docType, $label, $docNbr]);
     }
 
     else
     {
       $cfg->add_config_object( $label
                              , { location => $cfg->C_CFF_FILEPATH
-                               , requestFile => $filename
+                               , request_file => $filename
                                , store_type => $docType
                                }
                              );
@@ -143,23 +135,19 @@ sub load_input_file
       {
         $cfg->load;
         $self->check_and_select_doc_nbr($docNbr);
-        $self->wlog( "Adding new data2xml config '$label', doc $docNbr selected"
-                   , $self->C_CONFADDDED
-                   );
+        $self->log( $self->C_CONFADDDED, [ $label, $docNbr]);
       }
 
       else
       {
-        $self->wlog( "Failed to add data2xml config '$label'"
-                   , $self->C_CONFADDFAIL
-                   );
+        $self->log( $self->C_CONFADDFAIL, [$label]);
       }
     }
   }
 
   else
   {
-    $self->wlog( "filename not defined", $self->C_FILENOTDEFINED);
+    $self->log($self->C_FILENOTDEFINED);
   }
 }
 
@@ -171,7 +159,7 @@ sub load_data
 {
   my($self) = @_;
 
-  my $label = 'D2X-' . $self->data_label;
+  my $label = 'D2A-' . $self->data_label;
   $self->set_data_label($label);
 
   my $app = AppState->instance;
@@ -183,7 +171,7 @@ sub load_data
   $cfg->drop_config_object($label)
     if defined $self->drop_previous_config
     and $self->drop_previous_config
-    and $cfg->hasConfigObject($label)
+    and $cfg->has_config_object($label)
     ;
 
 
@@ -191,33 +179,29 @@ sub load_data
   my $docType = 'data';
   $docNbr //= 0;
 
-  if( $cfg->hasConfigObject($label) )
+  if( $cfg->has_config_object($label) )
   {
     $cfg->select_config_object($label);
     $self->check_and_select_doc_nbr($docNbr);
-    $self->wlog( "$docType '$label doc $docNbr selected", $self->C_DOCSELECTED);
+    $self->log( $self->C_DOCSELECTED, [ $docType, $label, $docNbr]);
   }
 
   else
   {
     $cfg->add_config_object( $label
                            , { location => $cfg->C_CFF_FILEPATH
-                             , requestFile => $label
+                             , request_file => $label
                              }
                            );
     if( $log->is_last_success )
     {
       $self->check_and_select_doc_nbr($docNbr);
-      $self->wlog( "Adding new data2any config '$label', doc $docNbr selected"
-                 , $self->C_DOCSELECTED
-                 );
+      $self->log( $self->C_DOCSELECTED, [ $docType, $label, $docNbr]);
     }
 
     else
     {
-      $self->wlog( "Failed to add data2any config '$label'"
-                 , $self->C_CONFADDFAIL
-                 );
+      $self->log( $self->C_CONFADDFAIL, [$label]);
     }
 
     # Set the given data in the configuration
@@ -239,21 +223,16 @@ sub select_input_file
   my $cfg = AppState->instance->get_app_object('ConfigManager');
   $docNbr //= 0;
 
-#say STDERR "SIF: Label: $label";
-  if( $cfg->hasConfigObject($label) )
+  if( $cfg->has_config_object($label) )
   {
     $cfg->select_config_object($label);
     $self->check_and_select_doc_nbr($docNbr);
-    $self->wlog( "data to config '$label', doc $docNbr selected"
-               , $self->C_INPUTFILESELECTED
-               );
+    $self->log( $self->C_INPUTFILESELECTED, [$label, $docNbr]);
   }
 
   else
   {
-    $self->wlog( "Failed to select data to xml config '$label'"
-               , $self->C_SELECTFAIL
-               );
+    $self->log( $self->C_SELECTFAIL, [$label]);
   }
 
   return $cfg->get_current_document;
@@ -270,15 +249,14 @@ sub check_and_select_doc_nbr
   $cfg->select_document($docNbr);
   if( $cfg->get_current_document != $docNbr )
   {
-    $self->wlog( "Requested document not in range, set to"
-               . $cfg->get_current_document
-               , $self->C_DOCNBRNOTFOUND
-               );
+    $self->log( $self->C_DOCNBRNOTFOUND, [$cfg->get_current_document]);
   }
 
   else
   {
-    $self->wlog( "doc $docNbr selected", $self->C_DOCSELECTED);
+    my $docType = $self->data_file_type;
+    my $label = 'D2A-' . $self->input_file;
+    $self->log( $self->C_DOCSELECTED, [ $docType, $label, $docNbr]);
   }
 }
 
@@ -343,5 +321,5 @@ return;
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
