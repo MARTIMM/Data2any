@@ -18,7 +18,7 @@ extends qw(AppState::Ext::Constants);
 require Data2any::Aux::GeneralTools;
 
 use AppState;
-#use AppState::Ext::Meta_Constants;
+use AppState::Ext::Meta_Constants;
 
 require Cwd;
 require File::Basename;
@@ -26,6 +26,17 @@ require File::HomeDir;
 require File::Path;
 
 use DateTime;
+#-------------------------------------------------------------------------------
+# Error codes
+#
+def_sts( 'C_TRANSLATORSET',   'M_INFO', "Translator set to '%s'");
+def_sts( 'C_CONFLOADED',      'M_TRACE', 'Configuration file loaded');
+def_sts( 'C_DATALOADED',      'M_TRACE', 'User data loaded');
+def_sts( 'C_CANNOTRUNSUB',    'M_WARNING', 'Cannot run subroutine %s()');
+def_sts( 'C_FAILMODCONF',     'M_ERROR', 'Error modifying default config');
+def_sts( 'C_NOINPUTFILE',     'M_ERROR', 'One of the options input_data with data_label or input_file is missing');
+def_sts( 'C_ROOTNOARRAY',     'M_ERROR', 'Root is not an array reference');
+def_sts( 'C_NODEFAULTCFGOBJ', 'M_ERROR', 'No default config object');
 
 #-------------------------------------------------------------------------------
 # General tools
@@ -113,7 +124,7 @@ has translator =>
         $o //= '';
         if( $n ne $o )
         {
-          $self->wlog( "Translator set to $n", $self->C_TRANSLATORSET);
+          $self->log( $self->C_TRANSLATORSET, [$n]);
         }
       }
     );
@@ -198,20 +209,6 @@ sub BUILD
   {
     $self->log_init('D2A');
 
-    # Error codes
-    #
-#    $self->code_reset;
-    $self->def_sts( 'C_TRANSLATORSET',    'M_INFO');
-    $self->def_sts( 'C_CONFLOADED',       'M_INFO');
-    $self->def_sts( 'C_DATALOADED',       'M_INFO');
-#    $self->def_sts( 'C_', 'M_INFO');
-
-    $self->def_sts( 'C_CANNOTRUNSUB',     'M_WARNING');
-    $self->def_sts( 'C_FAILMODCONF',      'M_ERROR');
-    $self->def_sts( 'C_NOINPUTFILE',      'M_ERROR');
-    $self->def_sts( 'C_ROOTNOARRAY',      'M_ERROR');
-    $self->def_sts( 'C_NODEFAULTCFGOBJ',  'M_ERROR');
-#    $self->def_sts( 'C_', 'M_ERROR');
 
     # Code is a dualvar => type is 'Any' instead of 'Int'.
     #
@@ -222,9 +219,7 @@ sub BUILD
                               , is              => 'rw'
                               , isa             => 'Any'
                               );
-
-    __PACKAGE__->meta->make_immutable;
-  }
+      }
 }
 
 ################################################################################
@@ -258,14 +253,13 @@ sub _initialize
   $cfg->modify_config_object( 'defaultConfigObject'
                             , {request_file => 'data2any'}
                             );
-  $self->wlog( "Error modifying default config", $self->C_FAILMODCONF)
-    unless $log->is_last_success;
+  $self->log($self->C_FAILMODCONF) unless $log->is_last_success;
   $cfg->load;
   $cfg->add_documents({}) unless $cfg->nbr_documents;
   $cfg->save unless -e $cfg->config_file;
 
 #say "D2a i: $self";
-  $self->wlog( "Configuration file loaded", $self->C_CONFLOADED);
+  $self->log($self->C_CONFLOADED);
 
   #-----------------------------------------------------------------------------
   # Add and select data2xml config and select also requested document.
@@ -282,16 +276,12 @@ sub _initialize
 
   else
   {
-    $self->wlog( 'One of the options input_data with data_label or'
-               . ' input_file is missing'
-               , $self->C_NOINPUTFILE
-               );
+    $self->log($self->C_NOINPUTFILE);
   }
 
   # Check if the root is an array reference.
   #
-  $self->wlog( 'Root is not an array reference', $self->C_ROOTNOARRAY)
-     unless ref $cfg->get_document eq 'ARRAY';
+  $self->log($self->C_ROOTNOARRAY) unless ref $cfg->get_document eq 'ARRAY';
 
   # Make an entry in the configfile recently loaded files.
   #
@@ -312,12 +302,12 @@ sub _initialize
                                 );
     $cfg->save;
 
-    $self->wlog( "User data loaded", $self->C_DATALOADED);
+    $self->log($self->C_DATALOADED);
   }
 
   else
   {
-    $self->wlog( "User data loaded", $self->C_NODEFAULTCFGOBJ);
+    $self->log($self->C_NODEFAULTCFGOBJ);
   }
 }
 
@@ -392,7 +382,7 @@ sub _preprocess
 
   else
   {
-    $self->wlog( 'Cannot run subroutine init()', $self->C_CANNOTRUNSUB);
+    $self->log( $self->C_CANNOTRUNSUB, ['init']);
   }
 
   #-----------------------------------------------------------------------------
@@ -405,7 +395,7 @@ sub _preprocess
 
   else
   {
-    $self->wlog( 'Cannot run subroutine preprocess()', $self->C_CANNOTRUNSUB);
+    $self->log( $self->C_CANNOTRUNSUB, ['preprocess']);
   }
 
   # Get variables from the DocumentControl section
@@ -530,7 +520,7 @@ sub postprocess
   else
   {
     $resultText = '';
-    $self->wlog( 'Cannot run subroutine postprocess()', $self->C_CANNOTRUNSUB);
+    $self->log( $self->C_CANNOTRUNSUB, ['postprocess']);
   }
 
   $resultText //= '';
@@ -632,9 +622,7 @@ sub process_nodetree
 
   else
   {
-    $self->wlog( 'Cannot run subroutine process_nodetree()'
-               , $self->C_CANNOTRUNSUB
-               );
+    $self->log( $self->C_CANNOTRUNSUB, ['process_nodetree']);
   }
 }
 
@@ -648,7 +636,7 @@ sub get_translator_object
 }
 
 #-------------------------------------------------------------------------------
-
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__

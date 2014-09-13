@@ -12,8 +12,10 @@ my $config_dir = 't/XmlHelper';
 my $test_file = "$config_dir/Work/test_file.yml";
 
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir);
-$app->check_directories;
+$app->initialize( config_dir => $config_dir
+                , use_work_dir => 1
+                , check_directories => 1
+                );
 
 my $log = $app->get_app_object('Log');
 $log->do_append_log(0);

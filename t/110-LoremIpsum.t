@@ -13,18 +13,13 @@ my $test_file = "$config_dir/Work/test_file.yml";
 
 
 my $app = AppState->instance;
-$app->initialize( config_dir => $config_dir);
-$app->check_directories;
+$app->initialize( config_dir => $config_dir
+                , use_work_dir => 1
+                , check_directories => 1
+                );
 
 my $log = $app->get_app_object('Log');
-#$log->die_on_error(1);
-#$log->show_on_error(0);
-#$log->show_on_warning(1);
-#$log->do_append_log(0);
-#$log->do_flush_log(1);
-
 $log->start_logging;
-
 $log->log_level($log->M_ERROR);
 
 #-------------------------------------------------------------------------------
