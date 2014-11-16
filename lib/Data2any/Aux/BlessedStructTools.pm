@@ -1,6 +1,6 @@
 package Data2any::Aux::BlessedStructTools;
 
-use version; our $VERSION = '' . version->parse("v0.5.3");
+use version; our $VERSION = '' . version->parse("v0.5.4");
 use 5.012000;
 
 use Modern::Perl;
@@ -13,8 +13,8 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 use AppState;
-use AppState::NodeTree::Node;
-use AppState::NodeTree::NodeGlobal;
+use AppState::Plugins::Feature::NodeTree::Node;
+use AppState::Plugins::Feature::NodeTree::NodeGlobal;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ sub mk_node
 
   if( defined $nodename and $nodename and !ref($nodename) )
   {
-    $node = AppState::NodeTree::Node->new( name => $nodename);
+    $node = AppState::Plugins::Feature::NodeTree::Node->new( name => $nodename);
     $node->attributes($attributes) if ref($attributes) eq 'HASH';
     $parent_node->link_with_node($node);
   }

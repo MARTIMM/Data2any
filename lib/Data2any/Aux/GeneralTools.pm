@@ -4,7 +4,7 @@ use Modern::Perl;
 use namespace::autoclean;
 #use English qw(-no_match_vars); # Avoids regex perf penalty, perl < v5.016000
 
-use version; our $VERSION = '' . version->parse("v0.0.3");
+use version; our $VERSION = '' . version->parse("v0.0.4");
 use 5.012000;
 
 #-------------------------------------------------------------------------------
@@ -14,6 +14,7 @@ extends qw(AppState::Ext::Constants);
 
 use AppState;
 use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Feature::NodeTree::NodeGlobal;
 
 #-------------------------------------------------------------------------------
 # Error codes
@@ -270,7 +271,7 @@ sub get_variable
   # '$' on front if there is still one.
   #
   $key =~ s/^\$//;
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  my $node_global = AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
   return $node_global->get_global_data($key);
 }
 
@@ -284,7 +285,7 @@ sub get_variables
   # '$' on front if there is still one.
   #
   $key =~ s/^\$//;
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  my $node_global = AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
   return $node_global->get_global_data($key);
 }
 
@@ -295,7 +296,7 @@ sub set_variables
 {
   my( $self, %kvPairs) = @_;
 
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  my $node_global = AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
   $node_global->set_global_data(%kvPairs);
 }
 
@@ -305,7 +306,7 @@ sub get_dvar_names
 {
   my( $self) = @_;
 
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  my $node_global = AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
   return $node_global->get_global_data_keys;
 }
 
@@ -316,7 +317,7 @@ sub clear_dvars
   my( $self) = @_;
 return;
 
-  my $node_global = AppState::NodeTree::NodeGlobal->instance;
+  my $node_global = AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
   $node_global->clear_global_data;
 }
 

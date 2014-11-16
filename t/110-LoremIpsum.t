@@ -3,7 +3,7 @@
 use Modern::Perl;
 use Test::Most;
 use AppState;
-use AppState::NodeTree::Node;
+use AppState::Plugins::Feature::NodeTree::Node;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -20,7 +20,7 @@ $app->initialize( config_dir => $config_dir
 
 my $log = $app->get_app_object('Log');
 $log->start_logging;
-$log->log_level($log->M_ERROR);
+$log->file_log_level($log->M_ERROR);
 
 #-------------------------------------------------------------------------------
 # Setup test file. A YAML file with two documents
@@ -44,7 +44,7 @@ can_ok( 'Data2any::Any::LoremIpsum', 'new', 'process');
 # Test type is standard-1500
 #
 my $nt = $app->get_app_object('NodeTree');
-my $parent_node = AppState::NodeTree::Node->new(name => 'parentNode');
+my $parent_node = AppState::Plugins::Feature::NodeTree::Node->new(name => 'parentNode');
 my $object_data =
    { type => $nt->C_NT_NODEMODULE
    , module_name => 'Data2any::Any::IncludeDocument'
@@ -89,7 +89,7 @@ ok( $parent_node->get_child(0)->value
 # Test type is tuna-ipsum
 #
 $nt = $app->get_app_object('NodeTree');
-$parent_node = AppState::NodeTree::Node->new(name => 'parentNode');
+$parent_node = AppState::Plugins::Feature::NodeTree::Node->new(name => 'parentNode');
 $object_data =
 { type => $nt->C_NT_NODEMODULE
 , module_name => 'Data2any::Any::IncludeDocument'

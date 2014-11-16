@@ -1,6 +1,6 @@
 package Data2any;
 
-use version; our $VERSION = '' . version->parse('v0.1.2');
+use version; our $VERSION = '' . version->parse('v0.1.3');
 use 5.016003;
 
 use Modern::Perl;
@@ -13,6 +13,7 @@ use namespace::autoclean;
 
 use Moose;
 use Moose::Util::TypeConstraints;
+require match::simple;
 
 extends qw(AppState::Ext::Constants);
 require Data2any::Aux::GeneralTools;
@@ -108,7 +109,7 @@ has translatorTypes =>
 #
 subtype 'Data2any::TranslatorType'
     => as 'Str'
-    => where { $_ ~~ $__translatorTypes__ }
+    => where { match::simple::match( $_, $__translatorTypes__) }
     => message { "The translator type '$_' is not correct" };
 
 
@@ -138,7 +139,7 @@ has topRawEntries =>
 
 has nodeTree =>
     ( is                => 'ro'
-    , isa               => 'AppState::NodeTree::NodeDOM'
+    , isa               => 'AppState::Plugins::Feature::NodeTree::NodeDOM'
     , writer            => 'setNodeTree'
     );
 
@@ -205,10 +206,12 @@ sub BUILD
   $self->_gtls->set_input_file($options->{input_file} // '--No Defined Filename--.txt');
   $self->_gtls->set_data_file_type($options->{data_file_type} // 'Yaml');
 
-  if( $self->meta->is_mutable )
-  {
-    $self->log_init('D2A');
+  $self->log_init('D2A');
 
+  if( !$self->can('traverse_type') )
+  {
+    my $meta = Class::MOP::Class->initialize(__PACKAGE__);
+    $meta->make_mutable;
 
     # Code is a dualvar => type is 'Any' instead of 'Int'.
     #
@@ -219,7 +222,9 @@ sub BUILD
                               , is              => 'rw'
                               , isa             => 'Any'
                               );
-      }
+  
+    $meta->make_immutable;
+  }
 }
 
 ################################################################################

@@ -1,6 +1,6 @@
 package Data2any::Any::IncludeDocument;
 
-use version; our $VERSION = '' . version->parse('v0.0.2');
+use version; our $VERSION = '' . version->parse('v0.0.3');
 use 5.014003;
 
 use namespace::autoclean;
@@ -51,7 +51,7 @@ sub BUILD
 }
 
 #-------------------------------------------------------------------------------
-# Called by AppState::NodeTree tree builder after creating this object.
+# Called by AppState::Plugins::Feature::NodeTree tree builder after creating this object.
 # This type of use doesn't need to return a value. After process() is done
 # the current config file and current document can be changed into others.
 #
