@@ -52,7 +52,7 @@ sub BUILD
 }
 
 #-------------------------------------------------------------------------------
-# Called by AppState::Plugins::Feature::NodeTree tree builder after creating this object.
+# Called by AppState::Plugins::NodeTree tree builder after creating this object.
 # This type of use doesn't need to return a value. After process() is done
 # the current config file and current document can be changed into others.
 #

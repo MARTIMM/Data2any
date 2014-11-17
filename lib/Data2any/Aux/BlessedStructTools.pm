@@ -13,8 +13,8 @@ use Moose;
 extends qw(AppState::Ext::Constants);
 
 use AppState;
-use AppState::Plugins::Feature::NodeTree::Node;
-use AppState::Plugins::Feature::NodeTree::NodeGlobal;
+use AppState::Plugins::NodeTree::Node;
+use AppState::Plugins::NodeTree::NodeGlobal;
 use AppState::Ext::Meta_Constants;
 
 #-------------------------------------------------------------------------------
@@ -123,7 +123,7 @@ sub mk_node
 
   if( defined $nodename and $nodename and !ref($nodename) )
   {
-    $node = AppState::Plugins::Feature::NodeTree::Node->new( name => $nodename);
+    $node = AppState::Plugins::NodeTree::Node->new( name => $nodename);
     $node->attributes($attributes) if ref($attributes) eq 'HASH';
     $parent_node->link_with_node($node);
   }

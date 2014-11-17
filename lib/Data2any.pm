@@ -56,7 +56,7 @@ has _gtls =>
 #
 has _translators =>
     ( is                => 'ro'
-    , isa               => 'AppState::Plugins::Feature::PluginManager'
+    , isa               => 'AppState::Plugins::PluginManager'
     , init_arg          => undef
     , default           =>
       sub
@@ -139,7 +139,7 @@ has topRawEntries =>
 
 has nodeTree =>
     ( is                => 'ro'
-    , isa               => 'AppState::Plugins::Feature::NodeTree::NodeDOM'
+    , isa               => 'AppState::Plugins::NodeTree::NodeDOM'
     , writer            => 'setNodeTree'
     );
 

@@ -3,7 +3,7 @@
 use Modern::Perl;
 use Test::Most;
 use AppState;
-use AppState::Plugins::Feature::NodeTree::Node;
+use AppState::Plugins::NodeTree::Node;
 
 #-------------------------------------------------------------------------------
 # Init
@@ -45,7 +45,7 @@ can_ok( 'Data2any::Any::IncludeDocument', 'new', 'process');
 # Test type is include
 #
 my $nt = $app->get_app_object('NodeTree');
-my $parent_node = AppState::Plugins::Feature::NodeTree::Node->new(name => 'parentNode');
+my $parent_node = AppState::Plugins::NodeTree::Node->new(name => 'parentNode');
 my $object_data =
    { type => $nt->C_NT_NODEMODULE
    , module_name => 'Data2any::Any::IncludeDocument'
@@ -86,13 +86,13 @@ $fail ? fail("$phase failed")
 #-------------------------------------------------------------------------------
 # Test type is includeThis
 #
-my $node_global = AppState::Plugins::Feature::NodeTree::NodeGlobal->instance;
+my $node_global = AppState::Plugins::NodeTree::NodeGlobal->instance;
 $node_global->set_global_data(input_file => $test_file);
 
 $object_data =
 { type => $nt->C_NT_NODEMODULE
 , module_name => 'Data2any::Any::IncludeDocument'
-, parent_node => AppState::Plugins::Feature::NodeTree::Node->new(name => 'parentNode')
+, parent_node => AppState::Plugins::NodeTree::Node->new(name => 'parentNode')
 , node_data => { type => 'includeThis', document => 1}
 };
 
