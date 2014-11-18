@@ -10,13 +10,13 @@ use namespace::autoclean;
 
 use Modern::Perl;
 use Moose;
-extends 'AppState::Ext::Constants';
+extends 'AppState::Plugins::Log::Constants';
 
 use AppState;
 require Data2any::Aux::BlessedStructTools;
 require Data2any::Aux::GeneralTools;
 require Text::Lorem;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes

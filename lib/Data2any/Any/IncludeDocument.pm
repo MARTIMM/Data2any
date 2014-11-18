@@ -7,12 +7,12 @@ use namespace::autoclean;
 
 use Modern::Perl;
 use Moose;
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
 require Data2any::Aux::GeneralTools;
 require Data2any::Aux::BlessedStructTools;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes

@@ -10,10 +10,10 @@ use 5.012000;
 #-------------------------------------------------------------------------------
 use Moose;
 
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 use AppState::Plugins::NodeTree::NodeGlobal;
 
 #-------------------------------------------------------------------------------

@@ -10,12 +10,12 @@ use namespace::autoclean;
 #-------------------------------------------------------------------------------
 use Moose;
 
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 
 use AppState;
 use AppState::Plugins::NodeTree::Node;
 use AppState::Plugins::NodeTree::NodeGlobal;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 #-------------------------------------------------------------------------------
 # Error codes

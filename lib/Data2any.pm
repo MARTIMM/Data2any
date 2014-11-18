@@ -15,11 +15,11 @@ use Moose;
 use Moose::Util::TypeConstraints;
 require match::simple;
 
-extends qw(AppState::Ext::Constants);
+extends qw(AppState::Plugins::Log::Constants);
 require Data2any::Aux::GeneralTools;
 
 use AppState;
-use AppState::Ext::Meta_Constants;
+use AppState::Plugins::Log::Meta_Constants;
 
 require Cwd;
 require File::Basename;
