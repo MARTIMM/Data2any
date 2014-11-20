@@ -81,27 +81,27 @@ has _translators =>
 
 #$pm->list_plugin_names;
 
-        $self->_translatorTypes([$pm->get_plugin_names]);
+        $self->_translator_types([$pm->get_plugin_names]);
         return $pm;
       }
     );
 
 # Possible translator types. This is set by the plugin manager default
 # initialization. Need to use non-moose variable because of test in subtype
-# can not use $self to use a getter such as $self->translatorTypes().
+# can not use $self to use a getter such as $self->translator_types().
 #
-my $__translatorTypes__ = [];
-has translatorTypes =>
+my $__translator_types__ = [];
+has translator_types =>
     ( is                => 'ro'
     , isa               => 'ArrayRef'
     , init_arg          => undef
-    , writer            => '_translatorTypes'
+    , writer            => '_translator_types'
     , default           => sub { return []; }
     , trigger           =>
       sub
       {
         my( $self, $n, $o) = @_;
-        $__translatorTypes__ = $n;
+        $__translator_types__ = $n;
       }
     );
 
@@ -109,7 +109,7 @@ has translatorTypes =>
 #
 subtype 'Data2any::TranslatorType'
     => as 'Str'
-    => where { match::simple::match( $_, $__translatorTypes__) }
+    => where { match::simple::match( $_, $__translator_types__) }
     => message { "The translator type '$_' is not correct" };
 
 
@@ -130,7 +130,7 @@ has translator =>
       }
     );
 
-has topRawEntries =>
+has top_raw_entries =>
     ( is                => 'ro'
     , isa               => 'ArrayRef'
     , predicate         => 'hasTopEntries'
@@ -198,7 +198,7 @@ sub BUILD
 ################################################################################
 # Steps to convert data to a nodetree
 #
-sub nodetreeFromData
+sub nodetree_from_data
 {
   my($self) = @_;
 
@@ -343,6 +343,7 @@ sub _preprocess
   #
   my $tr = $self->getProperty('Translator');
   $self->translator($tr) if defined $tr and $tr;
+  $self->log( $self->C_LOG_TRACE, ["Translator $tr used"]);
 
   #-----------------------------------------------------------------------------
   # Initialize translator
@@ -426,7 +427,7 @@ sub _processTree
 {
   my( $self) = @_;
 
-  my $topRawEntries = $self->topRawEntries;
+  my $top_raw_entries = $self->top_raw_entries;
 
   # Get NodeTree object and the treebuild data hash. This is the hash which
   # is available to the plugins when they are created and called for action
@@ -449,7 +450,7 @@ sub _processTree
   #
   # Convert the data into a node tree.
   #
-  my $node_tree = $nt->convert_to_node_tree($topRawEntries);
+  my $node_tree = $nt->convert_to_node_tree($top_raw_entries);
 
   # Save the node tree
   #
@@ -638,7 +639,7 @@ Data2xml - Perl extension to convert a specially formatted data file into xml.
                               , logging => 1
                               , request_document => 0
                               );
-  $yaml2xml->nodetreeFromData;
+  $yaml2xml->nodetree_from_data;
   $yaml2xml->convert2xml;
 
 =back
@@ -674,7 +675,7 @@ Data2xml - Perl extension to convert a specially formatted data file into xml.
                            , request_document => 2
                            );
 
-  $d2xml->nodetreeFromData;
+  $d2xml->nodetree_from_data;
   $d2xml->convert2xml;
 
 =back
@@ -684,7 +685,7 @@ Data2xml - Perl extension to convert a specially formatted data file into xml.
 
 Generate XML code from data. Example 1 is a short program called C<yaml2xml>
 which is installed for your conveniance. This program reads a YAML datafile
-after which it is converted to a nodetree with C<nodetreeFromData>. Then call
+after which it is converted to a nodetree with C<nodetree_from_data>. Then call
 C<convert2xml> to generate the XML from the nodetree.
 
 
@@ -696,7 +697,7 @@ C<convert2xml> to generate the XML from the nodetree.
 
 =item * nodeTree().
 
-=item * nodetreeFromData(). This method is used to gather data from memory
+=item * nodetree_from_data(). This method is used to gather data from memory
 or from a file and create a nodetree from it. To get to this tree call
 nodeTree().
 
