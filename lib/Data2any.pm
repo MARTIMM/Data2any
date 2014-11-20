@@ -1,6 +1,6 @@
 package Data2any;
 
-use version; our $VERSION = '' . version->parse('v0.1.3');
+use version; our $VERSION = '' . version->parse('v0.1.4');
 use 5.016003;
 
 use Modern::Perl;
@@ -163,38 +163,6 @@ has sendToSelect =>
     ( is                => 'rw'
     , isa               => 'Any'
     , default           => 'STDOUT'
-    );
-
-has logging =>
-    ( is                => 'rw'
-    , isa               => 'Bool'
-    , default           => 0
-    , trigger           =>
-      sub
-      {
-        my( $self, $n, $o) = @_;
-
-        return if defined $o and $n eq $o;
-
-        my $log = AppState->instance->get_app_object('Log');
-        return unless ref $log eq 'AppState::Log';
-
-        if( $n eq 1 )
-        {
-          $log->log_level($self->M_ERROR);
-#          $log->die_on_error(1);
-#          $log->show_on_error(0);
-#          $log->show_on_warning(1);
-          $log->do_append_log(0);
-
-          $log->start_logging;
-        }
-
-        else
-        {
-          $log->stop_logging;
-        }
-      }
     );
 
 ################################################################################

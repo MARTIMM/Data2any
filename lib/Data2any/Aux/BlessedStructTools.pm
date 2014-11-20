@@ -1,6 +1,6 @@
 package Data2any::Aux::BlessedStructTools;
 
-use version; our $VERSION = '' . version->parse("v0.5.4");
+use version; our $VERSION = '' . version->parse("v0.5.5");
 use 5.012000;
 
 use Modern::Perl;
@@ -117,7 +117,7 @@ sub process
 #
 sub mk_node
 {
-  my( $self, $nodename, $parent_node, $value, $attributes) = @_;
+  my( $self, $nodename, $parent_node, $attributes) = @_;
 
   my $node;
 
@@ -180,9 +180,9 @@ sub set_default_attributes
   my $attr = {};
   $idPrefix //= '';
 
-  $node->addAttr(id => $yd->{id} . "_$idPrefix") if $yd->{id};
-  $node->addAttr(class => $yd->{class}) if $yd->{class};
-#  $node->addAttr(name => $yd->{name} . "_$idPrefix") if $yd->{name};
+  $node->add_attribute(id => $yd->{id} . "_$idPrefix") if $yd->{id};
+  $node->add_attribute(class => $yd->{class}) if $yd->{class};
+#  $node->add_attribute(name => $yd->{name} . "_$idPrefix") if $yd->{name};
 }
 
 #-------------------------------------------------------------------------------
