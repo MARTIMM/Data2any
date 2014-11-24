@@ -137,10 +137,10 @@ has top_raw_entries =>
     , writer            => 'setTopEntries'
     );
 
-has nodeTree =>
+has node_tree =>
     ( is                => 'ro'
     , isa               => 'AppState::Plugins::NodeTree::NodeDOM'
-    , writer            => 'setNodeTree'
+    , writer            => 'set_node_tree'
     );
 
 has properties =>
@@ -159,7 +159,7 @@ has properties =>
 # standard output and NOOUT is used to inhibit any output. The default will be
 # STDOUT. If no SendTo is defined, output will also go to STDOUT.
 #
-has sendToSelect =>
+has send_to_select =>
     ( is                => 'rw'
     , isa               => 'Any'
     , default           => 'STDOUT'
@@ -454,7 +454,7 @@ sub _processTree
 
   # Save the node tree
   #
-  $self->setNodeTree($node_tree);
+  $self->set_node_tree($node_tree);
 }
 
 ################################################################################
@@ -467,15 +467,12 @@ sub transform_nodetree
   #
   my $nt = AppState->instance->get_app_object('NodeTree');
 
-  # Traverse the tree. First setup of handlers then traverse depth
-  # first method 2.
+  # Traverse the tree. First setup of handlers then traverse the tree in a
+  # by the translator selected manner. The translator must have installed the
+  # proper handlers before calling this method.
   #
-#  my $level = 0;
-#  my $xmlResult = '';
-
-#  $self->clearTTD;
   my $traverseType = $self->traverse_type;
-  $nt->traverse( $self->nodeTree, $traverseType);
+  $nt->traverse( $self->node_tree, $traverseType);
 }
 
 ################################################################################
@@ -503,7 +500,7 @@ sub postprocess
   # Send result away except when NOOUT is requested. When NOOUT is used for
   # SendToSelect, the caller might want to use the result in some other way.
   #
-  if( $self->sendToSelect ne 'NOOUT' and $resultText )
+  if( $self->send_to_select ne 'NOOUT' and $resultText )
   {
     # Get the input filename or data label to get the path to the file.
     # Get the basename from it.
@@ -533,11 +530,11 @@ sub postprocess
     {
       # Text and negative values are converted to the first entry 0
       #
-      $self->sendToSelect(0) unless $self->sendToSelect =~ m/^\d+$/;
+      $self->send_to_select(0) unless $self->send_to_select =~ m/^\d+$/;
 
       my $nbrSpecs = scalar(@$sendToSpec);
-      $sendTo = $self->sendToSelect < $nbrSpecs
-                  ? $sendToSpec->[$self->sendToSelect]
+      $sendTo = $self->send_to_select < $nbrSpecs
+                  ? $sendToSpec->[$self->send_to_select]
                   : $sendToSpec->[0]
                   ;
     }
@@ -550,8 +547,8 @@ sub postprocess
     {
       # STDOUT or when the key in SendTo selection
       #
-      if( $self->sendToSelect eq 'STDOUT'
-          or !defined $sendToSpec->{$self->sendToSelect}
+      if( $self->send_to_select eq 'STDOUT'
+          or !defined $sendToSpec->{$self->send_to_select}
         )
       {
         $sendTo = '>-';
@@ -559,7 +556,7 @@ sub postprocess
 
       else
       {
-        $sendTo = $sendToSpec->{$self->sendToSelect};
+        $sendTo = $sendToSpec->{$self->send_to_select};
       }
     }
 
@@ -695,11 +692,11 @@ C<convert2xml> to generate the XML from the nodetree.
 
 =item * new(%attributes).
 
-=item * nodeTree().
+=item * node_tree().
 
 =item * nodetree_from_data(). This method is used to gather data from memory
 or from a file and create a nodetree from it. To get to this tree call
-nodeTree().
+node_tree().
 
 =item * postprocess(). Add extra code to the xml like a xml declaration,
 doctype, a http header or convert the whole into pdf.
