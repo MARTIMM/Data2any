@@ -123,8 +123,9 @@ sub mk_node
 
   if( defined $nodename and $nodename and !ref($nodename) )
   {
-    $node = AppState::Plugins::NodeTree::Node->new( name => $nodename);
-    $node->attributes($attributes) if ref($attributes) eq 'HASH';
+    $node = AppState::Plugins::NodeTree::Node->new(name => $nodename);
+    $self->set_default_attributes($node);
+    $node->add_attribute(%$attributes) if ref($attributes) eq 'HASH';
     $parent_node->link_with_node($node);
   }
 
@@ -159,13 +160,11 @@ sub get_default_attributes
 {
   my($self) = @_;
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   my $yd = $self->get_data_item('node_data');
   my $attr = {};
 
   $attr->{id} = $yd->{id} if $yd->{id};
   $attr->{class} = $yd->{class} if $yd->{class};
-#  $attr->{name} = $yd->{name} if $yd->{name};
 
   return $attr;
 }
@@ -174,15 +173,13 @@ sub get_default_attributes
 #
 sub set_default_attributes
 {
-  my( $self, $node, $idPrefix) = @_;
+  my( $self, $node) = @_;
 
   my $yd = $self->get_data_item('node_data');
   my $attr = {};
-  $idPrefix //= '';
 
-  $node->add_attribute(id => $yd->{id} . "_$idPrefix") if $yd->{id};
+  $node->add_attribute(id => $yd->{id}) if $yd->{id};
   $node->add_attribute(class => $yd->{class}) if $yd->{class};
-#  $node->add_attribute(name => $yd->{name} . "_$idPrefix") if $yd->{name};
 }
 
 #-------------------------------------------------------------------------------
