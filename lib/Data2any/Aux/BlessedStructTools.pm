@@ -23,12 +23,12 @@ use AppState::Plugins::Log::Meta_Constants;
 #def_sts( 'C_DOCSELECTED',       'M_INFO');
 #def_sts( 'C_CONFADDDED',        'M_INFO');
 #def_sts( 'C_INPUTFILESELECTED', 'M_INFO');
-def_sts( 'C_NOPROCESS',         'M_WARNING', 'Subroutine process() not defined in package %s');
+def_sts( 'C_NOPROCESS',         'M_WARN', 'Subroutine process() not defined in package %s');
 def_sts( 'C_NODENOTCREATED',    'M_ERROR', 'Node %s is not created');
 #def_sts( 'C_CONFADDFAIL',       'M_ERROR');
 #def_sts( 'C_FILENOTDEFINED',    'M_ERROR');
 #def_sts( 'C_SELECTFAIL',        'M_ERROR');
-#def_sts( 'C_DOCNBRNOTFOUND',    'M_WARNING');
+#def_sts( 'C_DOCNBRNOTFOUND',    'M_WARN');
 
 #-------------------------------------------------------------------------------
 # Object data is set by the NodeTree module. The data names that are set are;

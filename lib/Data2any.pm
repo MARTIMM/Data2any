@@ -33,7 +33,7 @@ use DateTime;
 def_sts( 'C_TRANSLATORSET',   'M_INFO', "Translator set to '%s'");
 def_sts( 'C_CONFLOADED',      'M_TRACE', 'Configuration file loaded');
 def_sts( 'C_DATALOADED',      'M_TRACE', 'User data loaded');
-def_sts( 'C_CANNOTRUNSUB',    'M_WARNING', 'Cannot run subroutine %s()');
+def_sts( 'C_CANNOTRUNSUB',    'M_WARN', 'Cannot run subroutine %s()');
 def_sts( 'C_FAILMODCONF',     'M_ERROR', 'Error modifying default config');
 def_sts( 'C_NOINPUTFILE',     'M_ERROR', 'One of the options input_data with data_label or input_file is missing');
 def_sts( 'C_ROOTNOARRAY',     'M_ERROR', 'Root is not an array reference');

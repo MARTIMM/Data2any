@@ -21,7 +21,7 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_LI_TYPENOTSUPPORTED', 'M_WARNING', 'Type %s not supported');
+def_sts( 'C_LI_TYPENOTSUPPORTED', 'M_WARN', 'Type %s not supported');
 
 #-------------------------------------------------------------------------------
 # Tools

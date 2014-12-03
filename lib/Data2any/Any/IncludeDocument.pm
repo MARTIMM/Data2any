@@ -17,8 +17,8 @@ use AppState::Plugins::Log::Meta_Constants;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_ID_TYPENOTSUPPORTED', 'M_WARNING', 'Type %s not supported');
-def_sts( 'C_ID_EXPRFAILED', 'M_WARNING', 'Expression for load_if failed: "%s %s %s"');
+def_sts( 'C_ID_TYPENOTSUPPORTED', 'M_WARN', 'Type %s not supported');
+def_sts( 'C_ID_EXPRFAILED', 'M_WARN', 'Expression for load_if failed: "%s %s %s"');
 
 #-------------------------------------------------------------------------------
 # General tools
