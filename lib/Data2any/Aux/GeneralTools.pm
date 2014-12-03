@@ -19,13 +19,13 @@ use AppState::Plugins::NodeTree::NodeGlobal;
 #-------------------------------------------------------------------------------
 # Error codes
 #
-def_sts( 'C_DOCSELECTED', 'M_INFO', '%s to xml config %s doc %s selected');
-def_sts( 'C_CONFADDDED', 'M_INFO', 'Adding new data2xml config %s, doc %s selected');
-def_sts( 'C_INPUTFILESELECTED','M_INFO', 'data to config %s, doc %s selected');
-def_sts( 'C_FILENOTDEFINED', 'M_ERROR', 'filename not defined');
-def_sts( 'C_CONFADDFAIL', 'M_ERROR', 'Failed to add data2xml config %s');
-def_sts( 'C_SELECTFAIL', 'M_ERROR', 'Failed to select data to xml config %s');
-def_sts( 'C_DOCNBRNOTFOUND', 'M_F_WARNING', 'Requested document not in range, set to %s');
+def_sts( 'C_DOCSELECTED',       'M_INFO', '%s to xml config %s doc %s selected');
+def_sts( 'C_CONFADDDED',        'M_INFO', 'Adding new data2xml config %s, doc %s selected');
+def_sts( 'C_INPUTFILESELECTED', 'M_INFO', 'data to config %s, doc %s selected');
+def_sts( 'C_FILENOTDEFINED',    'M_ERROR', 'filename not defined');
+def_sts( 'C_CONFADDFAIL',       'M_ERROR', 'Failed to add data2xml config %s');
+def_sts( 'C_SELECTFAIL',        'M_ERROR', 'Failed to select data to xml config %s');
+def_sts( 'C_DOCNBRNOTFOUND',    'M_WARNING', 'Requested document not in range, set to %s');
 
 #-------------------------------------------------------------------------------
 # Filename and its type with data which must be translated to xml.
